@@ -1,0 +1,24 @@
+{
+  "version": "2.0.10",
+  "compilerOptions": {
+    "rootDir": "src",
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "alwaysStrict": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": false,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "lib": ["es6"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "example", "lib", "__test__", "**/__stories__/**/*", "*.test.ts", "*.test.tsx"]
+}
