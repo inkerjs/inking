@@ -1,3 +1,3 @@
-# frox
+# FROX
 
-Another version of MobX all implemented by awesome ES2015 `froxy` 🤩
+Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩

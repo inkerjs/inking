@@ -1,0 +1,56 @@
+// import ExtendableProxy from './ExtendableProxy'
+import createTraps from './traps'
+import { $FROX } from './types'
+
+class Atom {
+  // public prop!: string | number | symbol
+  public proxy!: any
+  public source!: any
+  public atomSource: any = {}
+  public proxiedProps: any[] = []
+  // public proxy!: ProxyConstructor
+  // public parent!: ProxyConstructor
+  public reactions: Function[] = []
+
+  public constructor(value: any) {
+    this.source = value
+    // const proxy = new Proxy(value, createTraps(this))
+    // this.proxy = proxy
+  }
+
+  public get(prop) {
+    if (prop === $FROX) {
+      return true
+    }
+
+    return this.source[prop]
+  }
+
+  public set(prop, newValue) {
+    const oldValue = this.source[prop]
+    this.source[prop] = newValue
+    if (oldValue !== newValue) {
+      this.reportChanged()
+    }
+  }
+
+  public addProxiedProp = (prop: string | number | symbol, atom: Atom) => {
+    this.proxiedProps[prop] = atom
+  }
+
+  public isPropProxied = (prop: string | number | symbol) => {
+    return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
+  }
+
+  public addReaction = (fn: Function) => {
+    this.reactions.push(fn)
+  }
+
+  public reportChanged = () => {
+    this.reactions.forEach(reaction => {
+      reaction()
+    })
+  }
+}
+
+export default Atom
