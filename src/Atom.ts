@@ -1,8 +1,10 @@
 import { $IS_ATOM, primitiveType } from './types'
 
+// TODO: add generic <T> ?
 class Atom {
-  public proxy!: any
+  public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
   public source!: object
+  public isBeingTracked = false
   public proxiedProps: (string | number | symbol)[] = []
   public reactions: Function[] = []
 
@@ -42,7 +44,21 @@ class Atom {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (fn: Function) => {
+  public addReaction = (fn: Function | Function[]) => {
+    if (fn === null) return
+
+    if (this.proxiedProps.length === 0) {
+      this.isBeingTracked = true
+    }
+
+    if (Array.isArray(fn)) {
+      this.reactions.push(...fn)
+    } else {
+      this.reactions.push(fn)
+    }
+  }
+
+  public removeReaction = (fn: Function) => {
     this.reactions.push(fn)
   }
 

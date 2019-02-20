@@ -1,4 +1,5 @@
 import Atom from './Atom'
+import Computed, { createComputed } from './computed'
 import { autorun } from './observer'
 import createTraps from './traps'
 
@@ -13,5 +14,5 @@ function observable<T>(target: T): T {
   return proxy as any
 }
 
-export { autorun }
+export { autorun, Computed, createComputed }
 export default observable

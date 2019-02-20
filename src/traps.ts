@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { getCurrCollectingReaction } from './observer'
+import { getCurrCollectingReaction, resetCurrCollectingReaction } from './observer'
 import { isPrimitive } from './utils'
 
 const createTraps = (): ProxyHandler<Atom> => {
@@ -19,6 +19,7 @@ const createTraps = (): ProxyHandler<Atom> => {
         const currAtom = target
         const currReaction = getCurrCollectingReaction()
         currAtom.addReaction(currReaction)
+        resetCurrCollectingReaction()
         return value
       }
 
