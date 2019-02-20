@@ -10,7 +10,7 @@ function observable<T>(target: T): T {
   const atom = new Atom(target)
   const proxy = new Proxy(atom, createTraps())
   atom.proxy = proxy
-  return proxy
+  return proxy as any
 }
 
 export { autorun }

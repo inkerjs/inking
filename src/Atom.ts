@@ -1,29 +1,36 @@
-import { $TINAR } from './types'
+import { $IS_ATOM, primitiveType } from './types'
 
 class Atom {
   public proxy!: any
-  public source!: any
-  public atomSource: any = {}
-  public proxiedProps: any[] = []
+  public source!: object
+  public proxiedProps: (string | number | symbol)[] = []
   public reactions: Function[] = []
 
   public constructor(value: any) {
     this.source = value
   }
 
+  public isEqual: (oldValue: primitiveType, newValue: primitiveType) => boolean = (oldValue, newValue) => {
+    // TODO: import a default primitive value equal function
+    return oldValue === newValue
+  }
+
   public get(prop) {
-    if (prop === $TINAR) {
+    if (prop === $IS_ATOM) {
       return true
     }
 
+    // return the real value
     return this.source[prop]
   }
 
   public set(prop, newValue) {
     const oldValue = this.source[prop]
     this.source[prop] = newValue
-    if (oldValue !== newValue) {
+    if (!this.isEqual(oldValue, newValue)) {
       this.reportChanged()
+    } else {
+      // TODO: if not changed
     }
   }
 
