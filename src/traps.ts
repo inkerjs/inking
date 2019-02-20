@@ -1,10 +1,10 @@
 import Atom from './Atom'
 import { getCurrCollectingReaction } from './observer'
-import { $FROX } from './types'
+import { $TINAR } from './types'
 import { isPrimitive } from './utils'
 
 const isInternalProp = (prop: number | string | symbol) => {
-  return prop === $FROX
+  return prop === $TINAR
 }
 
 const createTraps = (): ProxyHandler<any> => {

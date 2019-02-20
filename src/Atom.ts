@@ -1,4 +1,4 @@
-import { $FROX } from './types'
+import { $TINAR } from './types'
 
 class Atom {
   public proxy!: any
@@ -12,7 +12,7 @@ class Atom {
   }
 
   public get(prop) {
-    if (prop === $FROX) {
+    if (prop === $TINAR) {
       return true
     }
 
