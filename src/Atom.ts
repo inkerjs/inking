@@ -1,21 +1,14 @@
-// import ExtendableProxy from './ExtendableProxy'
-import createTraps from './traps'
 import { $FROX } from './types'
 
 class Atom {
-  // public prop!: string | number | symbol
   public proxy!: any
   public source!: any
   public atomSource: any = {}
   public proxiedProps: any[] = []
-  // public proxy!: ProxyConstructor
-  // public parent!: ProxyConstructor
   public reactions: Function[] = []
 
   public constructor(value: any) {
     this.source = value
-    // const proxy = new Proxy(value, createTraps(this))
-    // this.proxy = proxy
   }
 
   public get(prop) {
