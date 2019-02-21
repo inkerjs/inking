@@ -1,6 +1,5 @@
 import Atom from './Atom'
 import { autorun } from './observer'
-import createTraps from './traps'
 
 export default class Computed {
   public computeFn: Function
@@ -11,6 +10,10 @@ export default class Computed {
   }
   public get() {
     return this.computeFn()
+  }
+
+  public set() {
+    throw Error(`do not try to set a computed value, it's automatic computed.`)
   }
 }
 

@@ -2,7 +2,19 @@ import Atom from './Atom'
 import { getCurrCollectingReaction, resetCurrCollectingReaction } from './observer'
 import { isPrimitive } from './utils'
 
-const createTraps = (): ProxyHandler<Atom> => {
+export interface ITrapsOptions {
+  allowToSet: boolean
+}
+
+export const defaultAtomTrapsOption: ITrapsOptions = {
+  allowToSet: true
+}
+
+export const defaultComputedTrapsOption: ITrapsOptions = {
+  allowToSet: false
+}
+
+const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHandler<Atom> => {
   return {
     get(target, prop) {
       // get value from atom
@@ -20,6 +32,11 @@ const createTraps = (): ProxyHandler<Atom> => {
         const currReaction = getCurrCollectingReaction()
         currAtom.addReaction(currReaction)
         resetCurrCollectingReaction()
+        return value
+      }
+
+      // primitive value: recursive end
+      if (typeof value === 'function') {
         return value
       }
 

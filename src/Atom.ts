@@ -1,5 +1,7 @@
 import { $IS_ATOM, primitiveType } from './types'
 
+export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
+
 // TODO: add generic <T> ?
 class Atom {
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
@@ -7,8 +9,17 @@ class Atom {
   public isBeingTracked = false
   public proxiedProps: (string | number | symbol)[] = []
   public reactions: Function[] = []
+  public atomType!: AtomType
 
   public constructor(value: any) {
+    switch (true) {
+      case Array.isArray(value):
+        this.atomType = `array`
+        break
+      default:
+        this.atomType = `object`
+        break
+    }
     this.source = value
   }
 
@@ -18,12 +29,13 @@ class Atom {
   }
 
   public get(prop) {
-    if (prop === $IS_ATOM) {
-      return true
+    const value = this.source[prop]
+    // native function will be called directly
+    if (typeof value === 'function') {
+      // TODO: ...args
+      return value
     }
-
-    // return the real value
-    return this.source[prop]
+    return value
   }
 
   public set(prop, newValue) {
