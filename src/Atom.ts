@@ -1,4 +1,5 @@
-import { $IS_ATOM, primitiveType } from './types'
+import { SideEffect } from '../src/observer'
+import { primitiveType } from './types'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
@@ -8,7 +9,7 @@ class Atom {
   public source!: object
   public isBeingTracked = false
   public proxiedProps: (string | number | symbol)[] = []
-  public reactions: Function[] = []
+  public sideEffects: SideEffect[] = []
   public atomType!: AtomType
 
   public constructor(value: any) {
@@ -42,9 +43,10 @@ class Atom {
     const oldValue = this.source[prop]
     this.source[prop] = newValue
     if (!this.isEqual(oldValue, newValue)) {
-      this.reportChanged()
+      this.reportChanged(oldValue, newValue)
     } else {
-      // TODO: if not changed
+      // TODO: if new value equals to oldValue
+      // but why are u doing this :)
     }
   }
 
@@ -56,7 +58,7 @@ class Atom {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (fn: Function | Function[]) => {
+  public addReaction = (fn: SideEffect | SideEffect[]) => {
     if (fn === null) return
 
     if (this.proxiedProps.length === 0) {
@@ -64,19 +66,21 @@ class Atom {
     }
 
     if (Array.isArray(fn)) {
-      this.reactions.push(...fn)
+      this.sideEffects.push(...fn)
     } else {
-      this.reactions.push(fn)
+      this.sideEffects.push(fn)
     }
   }
 
-  public removeReaction = (fn: Function) => {
-    this.reactions.push(fn)
+  public removeReaction = (effect: SideEffect) => {
+    this.sideEffects = this.sideEffects.filter((value, index, arr) => {
+      return value !== effect
+    })
   }
 
-  public reportChanged = () => {
-    this.reactions.forEach(reaction => {
-      reaction()
+  public reportChanged = (oldVal, newVal) => {
+    this.sideEffects.forEach(sideEffect => {
+      sideEffect.runEffect()
     })
   }
 }

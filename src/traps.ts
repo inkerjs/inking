@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { getCurrCollectingReaction, resetCurrCollectingReaction } from './observer'
+import { getCurrCollectingEffect, resetCurrCollectingEffect } from './observer'
 import { isPrimitive } from './utils'
 
 export interface ITrapsOptions {
@@ -27,11 +27,13 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
 
       // primitive value: recursive end
       if (isPrimitive(value)) {
-        // dependency collection time
+        // dependency collection timing
         const currAtom = target
-        const currReaction = getCurrCollectingReaction()
-        currAtom.addReaction(currReaction)
-        resetCurrCollectingReaction()
+        const currSideEffect = getCurrCollectingEffect()
+        if (currSideEffect) {
+          currAtom.addReaction(currSideEffect)
+        }
+        resetCurrCollectingEffect()
         return value
       }
 
