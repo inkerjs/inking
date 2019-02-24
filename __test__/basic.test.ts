@@ -1,1 +1,1 @@
-import hello from '../src/index'
+import { observable } from '../src/index'
