@@ -13,7 +13,8 @@ export class SideEffect implements IEffect {
   public constructor(fn: Function) {
     this.sideEffectFn = fn
   }
-  public predictFn = () => true // TODO: import an primitive equal function
+  public predictFn = () => true
+
   public runEffect = () => {
     if (this.predictFn()) {
       this.sideEffectFn()

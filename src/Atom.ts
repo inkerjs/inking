@@ -1,5 +1,6 @@
 import { SideEffect } from '../src/observer'
 import { primitiveType } from './types'
+import { defaultComparer } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
@@ -25,8 +26,7 @@ class Atom {
   }
 
   public isEqual: (oldValue: primitiveType, newValue: primitiveType) => boolean = (oldValue, newValue) => {
-    // TODO: import a default primitive value equal function
-    return oldValue === newValue
+    return defaultComparer(oldValue, newValue)
   }
 
   public get(prop) {
