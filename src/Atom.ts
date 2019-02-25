@@ -4,6 +4,20 @@ import { defaultComparer } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
+const sourceHandleCreator = changeCb => {
+  return {
+    set(target, prop, value, receiver) {
+      const oldValue = Reflect.get(target, prop, receiver)
+      const newValue = value
+      Reflect.set(target, prop, value, receiver)
+      if (!defaultComparer(oldValue, newValue)) {
+        changeCb(oldValue, newValue)
+      }
+      return true
+    }
+  }
+}
+
 // TODO: add generic <T> ?
 class Atom {
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
@@ -22,7 +36,7 @@ class Atom {
         this.atomType = `object`
         break
     }
-    this.source = value
+    this.source = new Proxy(value, sourceHandleCreator(this.reportChanged))
   }
 
   public isEqual: (oldValue: primitiveType, newValue: primitiveType) => boolean = (oldValue, newValue) => {
@@ -31,23 +45,23 @@ class Atom {
 
   public get(prop) {
     const value = this.source[prop]
-    // native function will be called directly
+    // native function will be bind and called directly
     if (typeof value === 'function') {
-      // TODO: ...args
-      return value
+      return value.bind(this.source)
     }
     return value
   }
 
   public set(prop, newValue) {
-    const oldValue = this.source[prop]
     this.source[prop] = newValue
-    if (!this.isEqual(oldValue, newValue)) {
-      this.reportChanged(oldValue, newValue)
-    } else {
-      // TODO: if new value equals to oldValue
-      // but why are u doing this :)
-    }
+    // const oldValue = this.source[prop]
+    // this.source[prop] = newValue
+    // if (!this.isEqual(oldValue, newValue)) {
+    //   this.reportChanged(oldValue, newValue)
+    // } else {
+    //   // TODO: if new value equals to oldValue
+    //   // but why are u doing this :)
+    // }
   }
 
   public addProxiedProp = (prop: string | number | symbol, atom: Atom) => {
