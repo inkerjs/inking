@@ -1,6 +1,17 @@
-import { observable } from '../src/index'
+import { autorun, observable } from '../src/index'
 
-const obj = observable({
+function buffer() {
+  const b: any[] = []
+  const res = (newValue: any) => {
+    b.push(newValue)
+  }
+  res.toArray = () => {
+    return b
+  }
+  return res
+}
+
+const getPlainObj = () => ({
   name: 'Adam',
   family: {
     father: {
@@ -20,6 +31,7 @@ const obj = observable({
 })
 
 test('native method of array', () => {
+  const obj = observable(getPlainObj())
   expect(obj.skills.slice()).toEqual(['eat', 'sleep'])
   obj.skills.push('code')
   expect(obj.skills.slice()).toEqual(['eat', 'sleep', 'code'])
@@ -31,4 +43,18 @@ test('native method of array', () => {
   obj.skills.pop()
   expect(obj.skills.slice()).toEqual(['s2', 'eat', 'sleep'])
   expect(obj.skills.concat()).toEqual(['s2', 'eat', 'sleep'])
+})
+
+test('observer of array', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  autorun(() => {
+    b(obj.skills.length)
+  })
+  obj.skills.push('code')
+  obj.skills.push('code')
+  obj.skills.pop()
+  obj.skills.shift()
+  // obj.skills.unshift('code')
+  expect(b.toArray()).toEqual([2, 3, 4, 3, 2])
 })

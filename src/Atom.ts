@@ -6,6 +6,14 @@ export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive 
 
 const sourceHandleCreator = changeCb => {
   return {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop)
+      // native function will be bind and called directly
+      if (typeof value === 'function') {
+        return value.bind(receiver)
+      }
+      return value
+    },
     set(target, prop, value, receiver) {
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
@@ -44,24 +52,11 @@ class Atom {
   }
 
   public get(prop) {
-    const value = this.source[prop]
-    // native function will be bind and called directly
-    if (typeof value === 'function') {
-      return value.bind(this.source)
-    }
-    return value
+    return this.source[prop]
   }
 
   public set(prop, newValue) {
     this.source[prop] = newValue
-    // const oldValue = this.source[prop]
-    // this.source[prop] = newValue
-    // if (!this.isEqual(oldValue, newValue)) {
-    //   this.reportChanged(oldValue, newValue)
-    // } else {
-    //   // TODO: if new value equals to oldValue
-    //   // but why are u doing this :)
-    // }
   }
 
   public addProxiedProp = (prop: string | number | symbol, atom: Atom) => {
