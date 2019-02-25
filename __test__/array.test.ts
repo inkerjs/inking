@@ -20,6 +20,15 @@ const obj = observable({
 })
 
 test('native method of array', () => {
-  obj.skills.push('code')
   expect(obj.skills.slice()).toEqual(['eat', 'sleep'])
+  obj.skills.push('code')
+  expect(obj.skills.slice()).toEqual(['eat', 'sleep', 'code'])
+  obj.skills.pop()
+  obj.skills.push('play')
+  obj.skills.splice(0, 0, 's1', 's2')
+  expect(obj.skills.slice()).toEqual(['s1', 's2', 'eat', 'sleep', 'play'])
+  obj.skills.shift()
+  obj.skills.pop()
+  expect(obj.skills.slice()).toEqual(['s2', 'eat', 'sleep'])
+  expect(obj.skills.concat()).toEqual(['s2', 'eat', 'sleep'])
 })
