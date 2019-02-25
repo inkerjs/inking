@@ -1,34 +1,5 @@
 import { autorun, observable } from '../src/index'
-
-function buffer() {
-  const b: any[] = []
-  const res = (newValue: any) => {
-    b.push(newValue)
-  }
-  res.toArray = () => {
-    return b
-  }
-  return res
-}
-
-const getPlainObj = () => ({
-  name: 'Adam',
-  family: {
-    father: {
-      name: 'daddy'
-    },
-    mother: {
-      name: 'mummy'
-    }
-  },
-  pets: [
-    {
-      type: 'cat',
-      name: 'Cathy'
-    }
-  ],
-  skills: ['eat', 'sleep']
-})
+import { buffer, getPlainObj } from './utils'
 
 test('native method of array', () => {
   const obj = observable(getPlainObj())
@@ -45,7 +16,7 @@ test('native method of array', () => {
   expect(obj.skills.concat()).toEqual(['s2', 'eat', 'sleep'])
 })
 
-test('observer of array', () => {
+test('native modify method', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
   autorun(() => {
@@ -57,16 +28,4 @@ test('observer of array', () => {
   obj.skills.shift()
   obj.skills[0] = 'eat'
   expect(b.toArray()).toEqual([2, 3, 4, 3, 2])
-})
-
-test('observer of array', () => {
-  const obj = observable(getPlainObj())
-  const b = buffer()
-  autorun(() => {
-    b(obj.name)
-  })
-  obj.name = 'Adam'
-  obj.name = 'David'
-  obj.name = 'David'
-  expect(b.toArray()).toEqual(['Adam', 'David'])
 })

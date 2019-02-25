@@ -14,6 +14,7 @@ const sourceHandleCreator = changeCb => {
       }
       return value
     },
+    // native and external function will all call this setters
     set(target, prop, value, receiver) {
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
@@ -57,6 +58,8 @@ class Atom {
     return this.source[prop]
   }
 
+  // api for external(user) to set a value
+  // native method modification will not call this method
   public set(prop, newValue) {
     if (this.source[prop] !== newValue) {
       this.source[prop] = newValue

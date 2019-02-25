@@ -1,26 +1,20 @@
-import { observable } from '../src/index'
+import { autorun, observable } from '../src/index'
+import { buffer, getPlainObj } from './utils'
 
-const obj = observable({
-  name: 'Adam',
-  family: {
-    father: {
-      name: 'daddy'
-    },
-    mother: {
-      name: 'mummy'
-    }
-  },
-  pets: [
-    {
-      type: 'cat',
-      name: 'Cathy'
-    }
-  ],
-  skills: ['eat', 'sleep']
+test('observer of array', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  autorun(() => {
+    b(obj.name)
+  })
+  obj.name = 'Adam'
+  obj.name = 'David'
+  obj.name = 'David'
+  expect(b.toArray()).toEqual(['Adam', 'David'])
 })
 
 test('key/value access right', () => {
-  const o = observable(obj)
+  const o = observable(getPlainObj())
   expect(o.name).toBe('Adam')
   expect(o.family.father.name).toBe('daddy')
   expect(o.pets[0].name).toBe('Cathy')
