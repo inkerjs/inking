@@ -20,7 +20,7 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
       // get value from atom
       const value = target.get(prop)
       // if it's already proxied, directly return the proxy
-      if (target.isPropProxied(prop)) {
+      if (target.isPropProxied(prop as any)) {
         const existAtom = target.proxiedProps[prop]
         return existAtom.proxy
       }
@@ -31,7 +31,7 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
         const currAtom = target
         const currSideEffect = getCurrCollectingEffect()
         if (currSideEffect) {
-          currAtom.addReaction(currSideEffect)
+          currAtom.addReaction(prop as any, currSideEffect)
         }
         resetCurrCollectingEffect()
         return value
@@ -46,7 +46,7 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
       const childAtom = new Atom(value)
       const childProxy = new Proxy<Atom>(childAtom, createTraps())
       childAtom.proxy = childProxy
-      target.addProxiedProp(prop, childAtom)
+      target.addProxiedProp(prop as any, childAtom)
       return childProxy
     },
     set(target, prop, value, receiver) {

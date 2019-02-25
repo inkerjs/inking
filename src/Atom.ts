@@ -18,12 +18,14 @@ const sourceHandleCreator = changeCb => {
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
       Reflect.set(target, prop, value, receiver)
-      if (!defaultComparer(oldValue, newValue)) {
-        changeCb(oldValue, newValue)
-      }
+      changeCb(prop, oldValue, newValue)
       return true
     }
   }
+}
+
+interface ISideEffects {
+  [prop: string]: SideEffect[]
 }
 
 // TODO: add generic <T> ?
@@ -32,7 +34,7 @@ class Atom {
   public source!: object
   public isBeingTracked = false
   public proxiedProps: (string | number | symbol)[] = []
-  public sideEffects: SideEffect[] = []
+  public sideEffects: ISideEffects = {}
   public atomType!: AtomType
 
   public constructor(value: any) {
@@ -56,39 +58,49 @@ class Atom {
   }
 
   public set(prop, newValue) {
-    this.source[prop] = newValue
+    if (this.source[prop] !== newValue) {
+      this.source[prop] = newValue
+    }
   }
 
-  public addProxiedProp = (prop: string | number | symbol, atom: Atom) => {
+  public addProxiedProp = (prop: string | number, atom: Atom) => {
     this.proxiedProps[prop] = atom
   }
 
-  public isPropProxied = (prop: string | number | symbol) => {
+  public isPropProxied = (prop: string | number) => {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (fn: SideEffect | SideEffect[]) => {
+  public addReaction = (prop: string | number, fn: SideEffect | SideEffect[]) => {
     if (fn === null) return
 
     if (this.proxiedProps.length === 0) {
       this.isBeingTracked = true
     }
 
+    if (!Array.isArray(this.sideEffects[prop])) {
+      this.sideEffects[prop] = []
+    }
+
     if (Array.isArray(fn)) {
-      this.sideEffects.push(...fn)
+      this.sideEffects[prop].push(...fn)
     } else {
-      this.sideEffects.push(fn)
+      this.sideEffects[prop].push(fn)
     }
   }
 
-  public removeReaction = (effect: SideEffect) => {
-    this.sideEffects = this.sideEffects.filter((value, index, arr) => {
+  public removeReaction = (prop: string | number, effect: SideEffect) => {
+    this.sideEffects[prop] = this.sideEffects[prop].filter((value, index, arr) => {
       return value !== effect
     })
   }
 
-  public reportChanged = (oldVal, newVal) => {
-    this.sideEffects.forEach(sideEffect => {
+  public reportChanged = (prop: string | number, oldVal, newVal) => {
+    if (!this.sideEffects[prop]) {
+      return
+    }
+
+    this.sideEffects[prop].forEach(sideEffect => {
       sideEffect.runEffect()
     })
   }

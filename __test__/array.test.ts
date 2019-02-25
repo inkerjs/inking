@@ -52,9 +52,21 @@ test('observer of array', () => {
     b(obj.skills.length)
   })
   obj.skills.push('code')
-  obj.skills.push('code')
+  obj.skills.unshift('code')
   obj.skills.pop()
   obj.skills.shift()
-  // obj.skills.unshift('code')
+  obj.skills[0] = 'eat'
   expect(b.toArray()).toEqual([2, 3, 4, 3, 2])
+})
+
+test('observer of array', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  autorun(() => {
+    b(obj.name)
+  })
+  obj.name = 'Adam'
+  obj.name = 'David'
+  obj.name = 'David'
+  expect(b.toArray()).toEqual(['Adam', 'David'])
 })
