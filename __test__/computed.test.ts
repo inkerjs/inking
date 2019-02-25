@@ -7,6 +7,8 @@ test('read computed value from observable value', () => {
     return obj.skills.join('_')
   })
   expect(c1.get()).toBe('eat_sleep')
+  obj.skills.push('code')
+  expect(c1.get()).toBe('eat_sleep_code')
 })
 
 test('autorun of computed', () => {

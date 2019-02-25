@@ -7,7 +7,10 @@ export interface IEffect {
   sideEffectFn: Function
 }
 
+type ISideEffectType = `computed` | `reaction`
+
 export class SideEffect implements IEffect {
+  public type!: ISideEffectType
   public sideEffectFn
   public dependencies = []
   public constructor(fn: Function) {

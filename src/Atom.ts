@@ -1,14 +1,21 @@
 import { SideEffect } from '../src/observer'
+import { getCurrCollectingEffect, resetCurrCollectingEffect } from './observer'
 import { primitiveType } from './types'
-import { defaultComparer } from './utils'
+import { defaultComparer, once } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
-const sourceHandleCreator = changeCb => {
+const sourceHandleCreator = (atom: Atom, changeCb: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
       // native function will be bind and called directly
+      // register effect
+      // FIXME:
+      // const currSideEffect = getCurrCollectingEffect()
+      // if (currSideEffect) {
+      //   atom.addReaction(prop as any, currSideEffect)
+      // }
       if (typeof value === 'function') {
         return value.bind(receiver)
       }
@@ -47,7 +54,7 @@ class Atom {
         this.atomType = `object`
         break
     }
-    this.source = new Proxy(value, sourceHandleCreator(this.reportChanged))
+    this.source = new Proxy(value, sourceHandleCreator(this, this.reportChanged))
   }
 
   public isEqual: (oldValue: primitiveType, newValue: primitiveType) => boolean = (oldValue, newValue) => {
@@ -74,8 +81,8 @@ class Atom {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (prop: string | number, fn: SideEffect | SideEffect[]) => {
-    if (fn === null) return
+  public addReaction = (prop: string | number, handler: SideEffect) => {
+    if (handler === null) return
 
     if (this.proxiedProps.length === 0) {
       this.isBeingTracked = true
@@ -85,11 +92,13 @@ class Atom {
       this.sideEffects[prop] = []
     }
 
-    if (Array.isArray(fn)) {
-      this.sideEffects[prop].push(...fn)
-    } else {
-      this.sideEffects[prop].push(fn)
-    }
+    // const listeners = this.sideEffects[prop]
+    // return once(() => {
+    //   const idx = listeners.indexOf(handler)
+    //   if (idx !== -1) listeners.splice(idx, 1)
+    // })
+
+    this.sideEffects[prop].push(handler)
   }
 
   public removeReaction = (prop: string | number, effect: SideEffect) => {
