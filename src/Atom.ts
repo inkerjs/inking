@@ -1,7 +1,7 @@
 import { SideEffect } from '../src/observer'
 import { getCurrCollectingEffect, resetCurrCollectingEffect } from './observer'
 import { primitiveType } from './types'
-import { defaultComparer, once } from './utils'
+import { defaultComparer, isPrimitive, once } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
@@ -12,9 +12,11 @@ const sourceHandleCreator = (atom: Atom, changeCb: Function) => {
       // native function will be bind and called directly
       // register effect
       // FIXME:
-      // const currSideEffect = getCurrCollectingEffect()
-      // if (currSideEffect) {
-      //   atom.addReaction(prop as any, currSideEffect)
+      // if (isPrimitive(value)) {
+      //   const currSideEffect = getCurrCollectingEffect()
+      //   if (currSideEffect) {
+      //     atom.addReaction(prop as any, currSideEffect)
+      //   }
       // }
       if (typeof value === 'function') {
         return value.bind(receiver)
@@ -81,7 +83,7 @@ class Atom {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (prop: string | number, handler: SideEffect) => {
+  public addReaction = (prop: string | number, handler: SideEffect | null) => {
     if (handler === null) return
 
     if (this.proxiedProps.length === 0) {

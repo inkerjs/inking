@@ -1,15 +1,34 @@
 import Atom from './Atom'
-import { autorun } from './observer'
+import { autorun, getCurrCollectingEffect, SideEffect } from './observer'
 
 export default class Computed {
+  public value: any
   public computeFn: Function
   public observing: Atom[] = []
+  public sideEffects: SideEffect[] = []
   public constructor(initFn: Function) {
     this.computeFn = initFn
-    autorun(initFn)
+    autorun(this.reCompute.bind(this))
   }
+
+  public reCompute() {
+    this.value = this.computeFn()
+    this.sideEffects.forEach(sideEffect => {
+      sideEffect.runEffect()
+    })
+  }
+
   public get() {
-    return this.computeFn()
+    this.addReaction(getCurrCollectingEffect())
+    return this.value
+  }
+
+  public addReaction = (handler: SideEffect | null) => {
+    if (handler === null) return
+    if (!Array.isArray(this.sideEffects)) {
+      this.sideEffects = []
+    }
+    this.sideEffects.push(handler)
   }
 
   public set() {
