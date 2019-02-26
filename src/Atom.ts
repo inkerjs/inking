@@ -12,12 +12,13 @@ const sourceHandleCreator = (atom: Atom, changeCb: Function) => {
       // native function will be bind and called directly
       // register effect
       // FIXME:
-      // if (isPrimitive(value)) {
-      //   const currSideEffect = getCurrCollectingEffect()
-      //   if (currSideEffect) {
-      //     atom.addReaction(prop as any, currSideEffect)
-      //   }
-      // }
+      if (isPrimitive(value)) {
+        const currSideEffect = getCurrCollectingEffect()
+        if (currSideEffect) {
+          atom.addReaction(prop as any, currSideEffect)
+        }
+        resetCurrCollectingEffect()
+      }
       if (typeof value === 'function') {
         return value.bind(receiver)
       }

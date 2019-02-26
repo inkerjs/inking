@@ -27,13 +27,13 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
 
       // primitive value: recursive end
       if (isPrimitive(value)) {
-        // dependency collection timing
-        const currAtom = target
-        const currSideEffect = getCurrCollectingEffect()
-        if (currSideEffect) {
-          currAtom.addReaction(prop as any, currSideEffect)
-        }
-        resetCurrCollectingEffect()
+        //   // dependency collection timing
+        //   const currAtom = target
+        //   const currSideEffect = getCurrCollectingEffect()
+        //   if (currSideEffect) {
+        //     currAtom.addReaction(prop as any, currSideEffect)
+        //   }
+        //   resetCurrCollectingEffect()
         return value
       }
 

@@ -1,4 +1,6 @@
 import Atom from './Atom'
+import { once } from './utils'
+
 let currentCollectingEffect: SideEffect | null = null
 
 export interface IEffect {

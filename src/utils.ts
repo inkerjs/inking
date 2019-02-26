@@ -9,7 +9,7 @@ export interface Lambda {
   name?: string
 }
 
-export function once(func: Lambda): Lambda {
+export function once(func: Function): Function {
   let invoked = false
   return function() {
     if (invoked) return
