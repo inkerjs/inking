@@ -1,6 +1,6 @@
 import Atom from './Atom'
 import Computed, { createComputed } from './computed'
-import { autorun, when } from './observer'
+import { Action, autorun, when } from './observer'
 import createTraps from './traps'
 
 function createAtom<T>(target: T) {
@@ -29,4 +29,4 @@ const observableFactories = {
 
 Object.keys(observableFactories).forEach(name => (observable[name] = observableFactories[name]))
 
-export { observable, autorun, Computed, createComputed, when }
+export { observable, Action, autorun, Computed, createComputed, when }

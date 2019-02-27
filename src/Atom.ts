@@ -1,25 +1,24 @@
-import { SideEffect } from '../src/observer'
-import { getCurrCollectingEffect, resetCurrCollectingEffect } from './observer'
+import { getCurrCollectingEffect, globalState, pendingReactions, SideEffect } from './observer'
 import { primitiveType } from './types'
 import { defaultComparer, isPrimitive, once } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
-const sourceHandleCreator = (atom: Atom, changeCb: Function) => {
+const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
-      // native function will be bind and called directly
-      // register effect
-      // FIXME:
       if (isPrimitive(value)) {
+        // dependency collection timing
+        // register effect
         const currSideEffect = getCurrCollectingEffect()
         if (currSideEffect) {
           atom.addReaction(prop as any, currSideEffect)
         }
-        resetCurrCollectingEffect()
       }
+      // native function will be bind and called directly
       if (typeof value === 'function') {
+        // bind receiver, cause need to trigger `set` in handler
         return value.bind(receiver)
       }
       return value
@@ -29,7 +28,11 @@ const sourceHandleCreator = (atom: Atom, changeCb: Function) => {
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
       Reflect.set(target, prop, value, receiver)
-      changeCb(prop, oldValue, newValue)
+      // if (globalState.batchDeep > 0) {
+      //   pendingReactions.add(reportChanged)
+      // } else {
+      reportChanged(prop)
+      // }
       return true
     }
   }
@@ -95,12 +98,6 @@ class Atom {
       this.sideEffects[prop] = []
     }
 
-    // const listeners = this.sideEffects[prop]
-    // return once(() => {
-    //   const idx = listeners.indexOf(handler)
-    //   if (idx !== -1) listeners.splice(idx, 1)
-    // })
-
     this.sideEffects[prop].push(handler)
   }
 
@@ -110,13 +107,18 @@ class Atom {
     })
   }
 
-  public reportChanged = (prop: string | number, oldVal, newVal) => {
+  public reportChanged = (prop: string | number) => {
     if (!this.sideEffects[prop]) {
       return
     }
 
     this.sideEffects[prop].forEach(sideEffect => {
-      sideEffect.runEffect()
+      if (globalState.batchDeep > 0) {
+        pendingReactions.add(sideEffect.runEffect)
+      } else {
+        sideEffect.runEffect()
+      }
+      // sideEffect.runEffect()
     })
   }
 }

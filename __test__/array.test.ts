@@ -29,3 +29,19 @@ test('native modify method', () => {
   obj.skills[0] = 'eat'
   expect(b.toArray()).toEqual([2, 3, 4, 3, 2])
 })
+
+test('native method of array', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  autorun(() => {
+    b(obj.skills[0])
+  })
+  obj.skills.push('code')
+  obj.skills.pop()
+  obj.skills.push('play')
+  obj.skills.splice(0, 0, 's1')
+  obj.skills.shift()
+  obj.skills.pop()
+  obj.skills[0] = 'say'
+  expect(b.toArray()).toEqual(['eat', 's1', 'eat', 'say'])
+})

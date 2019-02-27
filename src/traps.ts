@@ -17,8 +17,9 @@ export const defaultComputedTrapsOption: ITrapsOptions = {
 const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHandler<Atom> => {
   return {
     get(target, prop) {
-      // get value from atom
+      // get value from proxy source
       const value = target.get(prop)
+
       // if it's already proxied, directly return the proxy
       if (target.isPropProxied(prop as any)) {
         const existAtom = target.proxiedProps[prop]
@@ -27,13 +28,6 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
 
       // primitive value: recursive end
       if (isPrimitive(value)) {
-        //   // dependency collection timing
-        //   const currAtom = target
-        //   const currSideEffect = getCurrCollectingEffect()
-        //   if (currSideEffect) {
-        //     currAtom.addReaction(prop as any, currSideEffect)
-        //   }
-        //   resetCurrCollectingEffect()
         return value
       }
 

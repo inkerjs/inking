@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { autorun, getCurrCollectingEffect, SideEffect } from './observer'
+import { autorun, getCurrCollectingEffect, resetCurrCollectingEffect, SideEffect } from './observer'
 
 export default class Computed {
   public value: any
