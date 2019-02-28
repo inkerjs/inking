@@ -1,4 +1,4 @@
-import { Action, autorun, observable } from '../src/index'
+import { action, autorun, observable } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
 test('transaction', () => {
@@ -9,7 +9,7 @@ test('transaction', () => {
     b(obj.name)
   })
 
-  Action(() => {
+  action(() => {
     obj.name = 't1'
     obj.name = 't2'
     obj.name = 't3'

@@ -1,10 +1,8 @@
 import Atom from './Atom'
-import { once } from './utils'
+import { globalState } from './globalState'
 
 let currentCollectingEffect: SideEffect | null = null
 type ISideEffectType = `computed` | `reaction`
-export let isPendingTransaction = false
-export let pendingReactions: Set<any>
 
 export interface IEffect {
   dependencies: Atom[]
@@ -12,69 +10,42 @@ export interface IEffect {
   sideEffectFn: Function
 }
 
-export const globalState = {
-  batchDeep: 0
-}
-
-/**
- * Enter next batch.
- */
-function startBatch() {
+export function startBatch() {
   if (globalState.batchDeep === 0) {
     // If starting a new queue from deep 0, clear the original queue.
-    pendingReactions = new Set()
+    globalState.pendingReactions = new Set()
   }
 
   globalState.batchDeep++
-  isPendingTransaction = true
-  // globalState.event.emit('startBatch', null)
+  globalState.isPendingTransaction = true
 }
 
-/**
- * Exit the current batch.
- */
-function endBatch() {
+export function endBatch() {
   if (--globalState.batchDeep === 0) {
     // runPendingReactions()
-    isPendingTransaction = false
+    globalState.isPendingTransaction = false
     runPendingReactions()
   }
-
-  // globalState.event.emit('endBatch', null)
 }
 
-function runPendingReactions() {
+export function runPendingReactions() {
   // The number of queue executions.
   let currentRunCount = 0
   const MAX_COUNT = 999
 
-  pendingReactions.forEach(reaction => {
+  globalState.pendingReactions.forEach(sideEffect => {
     currentRunCount++
 
     if (currentRunCount >= MAX_COUNT) {
-      pendingReactions.clear()
+      globalState.pendingReactions.clear()
       return
     }
 
-    reaction()
+    sideEffect.sideEffectFn()
   })
 
   // Clear pending reactions.
-  pendingReactions.clear()
-}
-
-export function Action(fn: () => any): void {
-  return runInAction.call(null, fn)
-}
-
-function runInAction(fn: () => any | Promise<any>, debugName?: string) {
-  // globalState.event.emit('runInAction', debugName)
-  startBatch()
-  try {
-    return fn()
-  } finally {
-    endBatch()
-  }
+  globalState.pendingReactions.clear()
 }
 
 export class SideEffect implements IEffect {

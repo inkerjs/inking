@@ -1,4 +1,5 @@
-import { getCurrCollectingEffect, globalState, pendingReactions, SideEffect } from './observer'
+import { globalState } from './globalState'
+import { getCurrCollectingEffect, SideEffect } from './observer'
 import { primitiveType } from './types'
 import { defaultComparer, isPrimitive, once } from './utils'
 
@@ -28,11 +29,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
       Reflect.set(target, prop, value, receiver)
-      // if (globalState.batchDeep > 0) {
-      //   pendingReactions.add(reportChanged)
-      // } else {
       reportChanged(prop)
-      // }
       return true
     }
   }
@@ -113,12 +110,12 @@ class Atom {
     }
 
     this.sideEffects[prop].forEach(sideEffect => {
+      // isRunning transaction
       if (globalState.batchDeep > 0) {
-        pendingReactions.add(sideEffect.runEffect)
+        globalState.pendingReactions.add(sideEffect)
       } else {
         sideEffect.runEffect()
       }
-      // sideEffect.runEffect()
     })
   }
 }
