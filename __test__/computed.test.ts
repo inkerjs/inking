@@ -28,16 +28,16 @@ test('read computed value from observable value', () => {
   ])
 })
 
-// test('autorun of computed', () => {
-//   const obj = observable(getPlainObj())
-//   const b = buffer()
-//   const c1 = createComputed(() => {
-//     return obj.skills.join('_')
-//   })
-//   autorun(() => {
-//     b(c1.get())
-//   })
-//   obj.skills.push('code')
+test('autorun of computed', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  const c1 = createComputed(() => {
+    return obj.skills.join('_')
+  })
+  autorun(() => {
+    b(c1.get())
+  })
+  obj.skills.push('code')
 
-//   expect(b.toArray()).toEqual(['eat_sleep', 'eat_sleep_code'])
-// })
+  expect(b.toArray()).toEqual(['eat_sleep', 'eat_sleep_code'])
+})

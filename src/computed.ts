@@ -18,7 +18,7 @@ export default class Computed {
   public reCompute() {
     this.value = this.computeFn()
     this.sideEffects.forEach(sideEffect => {
-      sideEffect.runEffect()
+      sideEffect.runEffectWithPredict()
     })
   }
 

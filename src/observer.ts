@@ -41,7 +41,7 @@ export function runPendingReactions() {
       return
     }
 
-    sideEffect.runEffect()
+    sideEffect.runEffectWithPredict()
   })
 
   // Clear pending reactions.
@@ -49,17 +49,34 @@ export function runPendingReactions() {
 }
 
 export class SideEffect implements IEffect {
-  public type!: SideEffectType
+  public type!: SideEffectType // TODO: assign it in constructor
+  /**
+   * for `reaction`, `when`, this is the first function argument
+   */
+  public dependenciesCollector: ((...args: any[]) => any) | null = null
+  /**
+   * the real side effect function should be invoked
+   * TODO: distinguish `dependenciesCollector` & `sideEffectFn` for `autorun`?
+   */
   public sideEffectFn
+  /**
+   * for `computed`, the dependencies who dependent on this effect
+   */
   public dependencies = []
   public constructor(fn: Function) {
     this.sideEffectFn = fn
   }
   public predictFn = () => true
 
-  public runEffect = () => {
+  public runEffectWithPredict = () => {
     if (this.predictFn()) {
-      this.sideEffectFn()
+      // pass arguments
+      // TODO: should pass arguments no matter what effect type is?
+      let collectorRes = null
+      if (typeof this.dependenciesCollector === 'function') {
+        collectorRes = this.dependenciesCollector()
+      }
+      this.sideEffectFn(collectorRes)
     }
   }
 }

@@ -16,7 +16,7 @@ test('basic', () => {
   obj.skills.unshift('code2') // 4
   obj.skills.pop() // 3
   obj.skills.shift() // 2
-  // obj.skills[0] = 'EAT'
+  obj.skills[0] = 'EAT'
 
   expect(b.toArray()).toEqual(['code1', 'code1', 'sleep'])
 })

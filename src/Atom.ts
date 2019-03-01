@@ -139,7 +139,7 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
-        sideEffect.runEffect()
+        sideEffect.runEffectWithPredict()
       }
     })
   }
