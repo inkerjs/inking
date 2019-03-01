@@ -6,25 +6,25 @@ Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩
 
 ### Making things observable
 
-- [ ] observable
+- [x] observable
 - [ ] @observable
-- [ ] objects
-- [ ] arrays
+- [x] objects
+- [x] arrays
 - [ ] maps
 - [ ] Boxed values
 - [ ] decorators
 
 ### Reacting to observables
 
-- [ ] computed
+- [x] computed
 - [ ] @computed
-- [ ] autorun
+- [x] autorun
 - [ ] when
 - [ ] reaction
 - [ ] @observer
 
 ### Changing observables
 
-- [ ] action
+- [x] action
 - [ ] async actions & flows
 - [ ] Object api

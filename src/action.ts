@@ -1,6 +1,6 @@
 import { endBatch, startBatch } from './observer'
 
-function runInAction(fn: () => any | Promise<any>, debugName?: string) {
+export function runInAction(fn: () => any | Promise<any>, debugName?: string) {
   startBatch()
   try {
     return fn()

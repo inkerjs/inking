@@ -1,3 +1,4 @@
+import { action, runInAction } from './action'
 import Atom from './Atom'
 import { autorun, getCurrCollectingEffect, resetCurrCollectingEffect, SideEffect } from './observer'
 
@@ -8,7 +9,10 @@ export default class Computed {
   public sideEffects: SideEffect[] = []
   public constructor(initFn: Function) {
     this.computeFn = initFn
-    autorun(this.reCompute.bind(this))
+    const boundRecompute = this.reCompute.bind(this)
+    // const inActionRecompute = () => runInAction(boundRecompute)
+    // const reComputeAction = action(this.reCompute.bind(this))
+    autorun(boundRecompute, 'computed')
   }
 
   public reCompute() {

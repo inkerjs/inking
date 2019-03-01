@@ -2,7 +2,7 @@ import Atom from './Atom'
 import { globalState } from './globalState'
 
 let currentCollectingEffect: SideEffect | null = null
-type ISideEffectType = `computed` | `reaction`
+type SideEffectType = `computed` | `reaction`
 
 export interface IEffect {
   dependencies: Atom[]
@@ -49,7 +49,7 @@ export function runPendingReactions() {
 }
 
 export class SideEffect implements IEffect {
-  public type!: ISideEffectType
+  public type!: SideEffectType
   public sideEffectFn
   public dependencies = []
   public constructor(fn: Function) {
@@ -72,10 +72,11 @@ export const resetCurrCollectingEffect = () => {
   currentCollectingEffect = null
 }
 
-export const autorun = (fn: any) => {
+export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // collect dependency
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
+  sideEffect.type = type
   currentCollectingEffect = sideEffect
   sideEffect.sideEffectFn()
   currentCollectingEffect = null

@@ -1,3 +1,4 @@
+import { runInAction } from './action'
 import { globalState } from './globalState'
 import { getCurrCollectingEffect, SideEffect } from './observer'
 import { primitiveType } from './types'
@@ -18,8 +19,10 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
         }
       }
       // native function will be bind and called directly
+      // TODO: need transaction, cause single native method may modify elements many times, suck as `unshift`
       if (typeof value === 'function') {
         // bind receiver, cause need to trigger `set` in handler
+        // return () => runInAction(value.bind(receiver))
         return value.bind(receiver)
       }
       return value
