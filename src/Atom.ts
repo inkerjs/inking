@@ -1,10 +1,25 @@
 import { runInAction } from './action'
 import { globalState } from './globalState'
-import { getCurrCollectingEffect, SideEffect } from './observer'
+import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
 import { primitiveType } from './types'
 import { defaultComparer, isPrimitive, once } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
+
+const aop = (fn: Function) => {
+  return new Proxy(fn, {
+    apply(target, ctx, args) {
+      // before
+      startBatch()
+      try {
+        return Reflect.apply(target, ctx, args)
+      } finally {
+        // after
+        endBatch()
+      }
+    }
+  })
+}
 
 const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
@@ -21,9 +36,16 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       // native function will be bind and called directly
       // TODO: need transaction, cause single native method may modify elements many times, suck as `unshift`
       if (typeof value === 'function') {
+        // const aopValue = function(...args) {
+        //   value.apply(receiver, args)
+        //   // value.call(args)
+        // }
         // bind receiver, cause need to trigger `set` in handler
         // return () => runInAction(value.bind(receiver))
-        return value.bind(receiver)
+        // FIXME: start transaction when invoke native method
+        // return aopValue
+
+        return aop(value.bind(receiver))
       }
       return value
     },

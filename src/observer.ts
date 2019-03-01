@@ -41,7 +41,7 @@ export function runPendingReactions() {
       return
     }
 
-    sideEffect.sideEffectFn()
+    sideEffect.runEffect()
   })
 
   // Clear pending reactions.
@@ -68,6 +68,10 @@ export const getCurrCollectingEffect = () => {
   return currentCollectingEffect
 }
 
+export const setCurrCollectingEffect = (effect: SideEffect) => {
+  currentCollectingEffect = effect
+}
+
 export const resetCurrCollectingEffect = () => {
   currentCollectingEffect = null
 }
@@ -79,17 +83,5 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   sideEffect.type = type
   currentCollectingEffect = sideEffect
   sideEffect.sideEffectFn()
-  currentCollectingEffect = null
-}
-
-type predicateType = () => boolean
-
-export const when = (predicate: predicateType, fn: Function) => {
-  const sideEffect = new SideEffect(fn)
-  sideEffect.predictFn = predicate
-  // `predicate` function will collect dependencies
-  // `fn` is the real callback will be triggered
-  currentCollectingEffect = sideEffect
-  predicate()
   currentCollectingEffect = null
 }

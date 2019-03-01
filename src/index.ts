@@ -1,8 +1,10 @@
 import { action } from './action'
 import Atom from './Atom'
 import Computed, { createComputed } from './computed'
-import { autorun, when } from './observer'
+import { autorun } from './observer'
+import { reaction } from './reaction'
 import createTraps from './traps'
+import { when } from './when'
 
 function createAtom<T>(target: T) {
   const atom = new Atom(target)
@@ -30,4 +32,4 @@ const observableFactories = {
 
 Object.keys(observableFactories).forEach(name => (observable[name] = observableFactories[name]))
 
-export { action, autorun, Computed, createComputed, observable, when }
+export { action, autorun, Computed, createComputed, observable, reaction, when }

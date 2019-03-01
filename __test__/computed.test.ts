@@ -19,12 +19,12 @@ test('read computed value from observable value', () => {
   obj.skills.shift()
   obj.skills[0] = 'EAT'
   expect(b.toArray()).toEqual([
+    'eat_sleep',
+    'eat_sleep_code1',
+    'code2_eat_sleep_code1',
+    'code2_eat_sleep',
+    'eat_sleep',
     'EAT_sleep'
-    // 'eat_sleep_code1',
-    // 'code2_eat_sleep_code1'
-    // 'code2_eat_sleep',
-    // 'eat_sleep',
-    // 'EAT_sleep'
   ])
 })
 

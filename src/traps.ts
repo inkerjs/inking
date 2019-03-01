@@ -31,7 +31,7 @@ const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHand
         return value
       }
 
-      // primitive value: recursive end
+      // native method: recursive end
       if (typeof value === 'function') {
         return value
       }
