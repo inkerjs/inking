@@ -4,7 +4,6 @@ import { buffer, getPlainObj } from './utils'
 test('basic', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
-
   reaction(
     () => obj.skills.length,
     () => {
