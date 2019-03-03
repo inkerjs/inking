@@ -1,25 +1,48 @@
-import { action, runInAction } from './action'
 import Atom from './Atom'
 import { autorun, getCurrCollectingEffect, resetCurrCollectingEffect, SideEffect } from './observer'
+import { defaultComparer, IEqualsComparer } from './utils'
 
+// TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
 export default class Computed {
+  /**
+   * real value of Computed
+   */
   public value: any
-  public computeFn: Function
+  /**
+   * for debug
+   */
+  public name?: string
+  /**
+   * function to express the computed value
+   */
+  public valueComputeFn: Function
+  /**
+   * Atoms this Computed dependents on
+   */
   public observing: Atom[] = []
+  /**
+   * side effects dependents on this Computed
+   */
   public sideEffects: SideEffect[] = []
+  /**
+   * comparer function, computed only will trigger its side effects when comparer return true
+   */
+  public equals: IEqualsComparer<any> = defaultComparer
+
   public constructor(initFn: Function) {
-    this.computeFn = initFn
-    const boundRecompute = this.reCompute.bind(this)
-    // const inActionRecompute = () => runInAction(boundRecompute)
-    // const reComputeAction = action(this.reCompute.bind(this))
+    this.valueComputeFn = initFn
+    const boundRecompute = this.reComputeAndTrigger.bind(this)
     autorun(boundRecompute, 'computed')
   }
 
-  public reCompute() {
-    this.value = this.computeFn()
-    this.sideEffects.forEach(sideEffect => {
-      sideEffect.runEffectWithPredict()
-    })
+  public reComputeAndTrigger() {
+    const oldValue = this.value
+    this.value = this.valueComputeFn()
+    if (this.equals(oldValue, this.value)) {
+      this.sideEffects.forEach(sideEffect => {
+        sideEffect.runEffectWithPredict()
+      })
+    }
   }
 
   public get() {
@@ -40,11 +63,22 @@ export default class Computed {
   }
 }
 
-export const createComputed = (initFn: Function) => {
-  const computed = new Computed(initFn)
+export interface IComputedValueOptions<T> {
+  get?: () => T
+  set?: (value: T) => void
+  name?: string
+  equals?: IEqualsComparer<T>
+  // context?: any
+  // requiresReaction?: boolean
+  // keepAlive?: boolean
+}
+
+export const createComputed = (getFn: Function, options?: IComputedValueOptions<any>) => {
+  const computed = new Computed(getFn)
+  if (typeof options === 'object') {
+    const { name, equals } = options
+    if (typeof name === 'string') computed.name = name
+    if (typeof equals === 'function') computed.equals = equals
+  }
   return computed
-  // const atom = new Atom(target)
-  // const proxy = new Proxy(atom, createTraps())
-  // atom.proxy = proxy
-  // return proxy as any
 }

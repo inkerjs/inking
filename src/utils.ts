@@ -1,5 +1,7 @@
 export const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
 
+export type IEqualsComparer<T> = (a: T, b: T) => boolean
+
 export const defaultComparer = (a: any, b: any): boolean => {
   return Object.is(a, b)
 }
