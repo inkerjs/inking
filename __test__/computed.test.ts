@@ -41,3 +41,28 @@ test('autorun of computed', () => {
 
   expect(b.toArray()).toEqual(['eat_sleep', 'eat_sleep_code'])
 })
+
+test('equals', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+
+  const c1 = createComputed(
+    () => {
+      return obj.skills.join('_')
+    },
+    {
+      equals: (oldValue: string, newValue: string) => oldValue.toLowerCase() === newValue.toLowerCase()
+    }
+  )
+
+  autorun(() => {
+    b(c1.get())
+  })
+
+  obj.skills[0] = 'eAt'
+  obj.skills.unshift('code')
+  obj.skills[2] = 'SLEEP'
+  obj.skills[0] = 'CODE'
+
+  expect(b.toArray()).toEqual(['eat_sleep', 'code_eAt_sleep'])
+})

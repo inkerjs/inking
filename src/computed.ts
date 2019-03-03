@@ -38,7 +38,7 @@ export default class Computed {
   public reComputeAndTrigger() {
     const oldValue = this.value
     this.value = this.valueComputeFn()
-    if (this.equals(oldValue, this.value)) {
+    if (!this.equals(oldValue, this.value)) {
       this.sideEffects.forEach(sideEffect => {
         sideEffect.runEffectWithPredict()
       })
