@@ -1,8 +1,8 @@
 # TINAR
 
-Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩
+Yet another version of MobX that implemented by awesome ES2015 `Proxy`.
 
-## Feature of MobX
+## Feature inherited from MobX
 
 ### Making things observable
 
@@ -11,7 +11,7 @@ Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩
 - [x] objects
 - [x] arrays
 - [ ] maps
-- [ ] Boxed values
+- [ ] boxed values
 - [ ] decorators
 
 ### Reacting to observables
@@ -19,8 +19,8 @@ Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩
 - [x] computed
 - [ ] @computed
 - [x] autorun
-- [ ] when
-- [ ] reaction
+- [x] when
+- [x] reaction
 - [ ] @observer
 
 ### Changing observables
@@ -28,3 +28,14 @@ Another version of MobX all implemented by awesome ES2015 `Proxy` 🤩
 - [x] action
 - [ ] async actions & flows
 - [ ] Object api
+
+### Utility functions
+
+- [ ] toJS
+- [ ] extendObservable
+- [ ] createAtom
+- [ ] intercept & observe
+
+### Others
+
+- [ ] Devtools
