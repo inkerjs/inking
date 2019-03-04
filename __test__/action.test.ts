@@ -1,7 +1,7 @@
 import { action, autorun, observable } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
-test('modify same property in transaction', () => {
+test('action transaction', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
 
@@ -9,11 +9,13 @@ test('modify same property in transaction', () => {
     b(obj.name)
   })
 
-  action(() => {
+  const act = action(() => {
     obj.name = 't1'
     obj.name = 't2'
     obj.name = 't3'
   })
+
+  act()
 
   expect(b.toArray()).toEqual(['Adam', 't3'])
 })
@@ -36,7 +38,7 @@ test('modify with native method', () => {
     b3(obj.skills.join('_'))
   })
 
-  action(() => {
+  const act = action(() => {
     obj.skills.unshift('i1')
     obj.skills.unshift('i2')
     obj.skills.pop()
@@ -44,7 +46,26 @@ test('modify with native method', () => {
     obj.skills.shift()
   })
 
+  act()
   expect(b1.toArray()).toEqual([2, 1])
   expect(b2.toArray()).toEqual(['sleep', undefined])
   expect(b3.toArray()).toEqual(['eat_sleep', 'eat'])
+})
+
+test('action with arguments', () => {
+  const obj = observable(getPlainObj())
+  const b1 = buffer()
+
+  autorun(() => {
+    b1(obj.skills.length)
+  })
+
+  const act = action((time: number) => {
+    for (let i = 0; i < time; i++) {
+      obj.skills.unshift(`i1`)
+    }
+  })
+
+  act(3)
+  expect(b1.toArray()).toEqual([2, 5])
 })

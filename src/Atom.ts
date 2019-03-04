@@ -1,4 +1,3 @@
-import { runInAction } from './action'
 import { globalState } from './globalState'
 import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
 import { primitiveType } from './types'
