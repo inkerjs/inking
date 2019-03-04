@@ -66,3 +66,17 @@ test('equals', () => {
 
   expect(b.toArray()).toEqual(['eat_sleep', 'code_eAt_sleep'])
 })
+
+// TODO: add `spy` for debug?
+// test('lazy recompute', () => {
+//   const obj = observable(getPlainObj())
+//   const b = buffer()
+
+//   const c1 = createComputed(() => {
+//     return obj.skills.join('_')
+//   })
+
+//   autorun(() => {
+//     b(c1.get())
+//   })
+// })
