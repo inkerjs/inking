@@ -69,3 +69,34 @@ test('action with arguments', () => {
   act(3)
   expect(b1.toArray()).toEqual([2, 5])
 })
+
+test('@action', () => {
+  class Person {
+    public name = 'Adam'
+    public family = {
+      father: {
+        name: 'daddy'
+      },
+      mother: {
+        name: 'mummy'
+      }
+    }
+    public pets = [
+      {
+        type: 'cat',
+        name: 'Cathy'
+      }
+    ]
+
+    public skills: string[] = ['eat', 'sleep']
+
+    @action
+    public addSkills(newSkill: string) {
+      this.skills.unshift(newSkill)
+    }
+  }
+
+  const p = new Person()
+  p.addSkills('code1')
+  expect(p.skills[0]).toEqual('code1')
+})
