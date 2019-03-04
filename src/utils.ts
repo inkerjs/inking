@@ -1,3 +1,5 @@
+import { endBatch, startBatch } from './observer'
+
 export const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
 
 export type IEqualsComparer<T> = (a: T, b: T) => boolean
@@ -19,4 +21,19 @@ export function once(func: Function): Function {
     /* tslint:disable */
     return (func as any).apply(this, arguments)
   }
+}
+
+export function makeFnInTransaction(fn: Function) {
+  return new Proxy(fn, {
+    apply(target, ctx, args) {
+      // AOP: before
+      startBatch()
+      try {
+        return Reflect.apply(target, ctx, args)
+      } finally {
+        // AOP: after
+        endBatch()
+      }
+    }
+  })
 }
