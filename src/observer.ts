@@ -98,7 +98,7 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  currentCollectingEffect = sideEffect
+  setCurrCollectingEffect(sideEffect)
   sideEffect.sideEffectFn()
-  currentCollectingEffect = null
+  resetCurrCollectingEffect()
 }

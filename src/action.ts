@@ -17,8 +17,8 @@ function createAction(name: string, fn: (...args: any[]) => any, _this?: any) {
   }
 }
 
-function actionDecorator(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const fn = descriptor.value
+function actionDecorator(target: any, propertyKey: string, baseDescriptor: PropertyDescriptor) {
+  const fn = baseDescriptor.value
   return {
     get() {
       return (...args: any[]) => {
@@ -31,7 +31,7 @@ function actionDecorator(target: any, propertyKey: string, descriptor: PropertyD
 
 export function action(fn: (...args: any[]) => any): Function
 export function action(name: string, fn: (...args: any[]) => any): Function
-export function action(target: Object, propertyKey: string, baseDescriptor?: PropertyDescriptor): PropertyDescriptor
+export function action(target: Object, propertyKey: string, baseDescriptor?: PropertyDescriptor): void
 
 export function action(arg1, arg2?, arg3?): any {
   // action(fn() {})
