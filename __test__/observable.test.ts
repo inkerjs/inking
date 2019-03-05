@@ -11,7 +11,7 @@ test('key/value access right', () => {
   expect(o.skills.length).toBe(2)
 })
 
-test('observer of array', () => {
+test('observable of array', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
   autorun(() => {
@@ -23,8 +23,31 @@ test('observer of array', () => {
   expect(b.toArray()).toEqual(['Adam', 'David'])
 })
 
-test('@observer', () => {
+test('inherit action method', () => {
   const b = buffer()
+  const proto = {
+    changeName() {
+      /* tslint:disable */
+      this.name = 'David'
+    }
+  }
+  const obj = Object.create(proto)
+  obj.name = 'Adam'
+  const o = observable(obj)
+
+  autorun(() => {
+    b(o.name)
+  })
+
+  o.changeName()
+
+  expect(o.name).toBe('David')
+  expect(b.toArray()).toEqual(['Adam', 'David'])
+})
+
+test('@observable', () => {
+  const b1 = buffer()
+  const b2 = buffer()
   @observable
   class Person {
     public name = 'Adam'
@@ -53,11 +76,12 @@ test('@observer', () => {
   const p = new Person()
 
   autorun(() => {
-    b(p.skills[0])
+    b1(p.skills[0])
+    // b2(p.name)
   })
 
-  p.skills.unshift('code1')
-  p.skills.push('code2')
-
-  expect(b.toArray()).toEqual(['eat', 'code1'])
+  p.addSkills('code3')
+  p.name = 'David'
+  expect(b1.toArray()).toEqual(['eat', 'code3'])
+  // expect(b2.toArray()).toEqual(['Adam', 'David'])
 })

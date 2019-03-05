@@ -17,7 +17,7 @@ export const defaultComputedTrapsOption: ITrapsOptions = {
 const createTraps = (options: ITrapsOptions = defaultAtomTrapsOption): ProxyHandler<Atom> => {
   return {
     get(target, prop) {
-      // get value from proxy source
+      // get value from source proxy
       const value = target.get(prop)
 
       // if it's already proxied, directly return the proxy

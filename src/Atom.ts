@@ -1,6 +1,6 @@
 import { globalState } from './globalState'
 import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
-import { primitiveType } from './types'
+import { $tinar, primitiveType } from './types'
 import { defaultComparer, isPrimitive, makeFnInTransaction } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
@@ -16,18 +16,22 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
         if (currSideEffect) {
           atom.addReaction(prop as any, currSideEffect)
         }
+        return value
       }
       // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
       if (typeof value === 'function') {
+        // FIXME: bind what object is really subtle
         return makeFnInTransaction(value.bind(receiver))
       }
+
+      // return a plain object to recursive make Atom
       return value
     },
     // native and external function will all call this setters
     set(target, prop, value, receiver) {
       // TODO: interceptor here?
-      const oldValue = Reflect.get(target, prop, receiver)
-      const newValue = value
+      // const oldValue = Reflect.get(target, prop, receiver)
+      // const newValue = value
       Reflect.set(target, prop, value, receiver)
       reportChanged(prop)
       return true
