@@ -8,25 +8,13 @@ function createAtom<T>(target: T) {
   return proxy as any
 }
 
-function createObservableDescriptor(target: Object, prop: string) {
-  // let enhancer = () => {
-  //   target[prop] =
-  // }
-  // return {
-  //   value: enhancer,
-  //   enumerable: true,
-  //   configurable: true,
-  //   writable: true
-  // }
-}
-
-// target: prototype
-function createClassPropDecorator(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  /* tslint:disable */
-  console.log('arguments: ', arguments)
-  console.log(this)
-  Object.defineProperty(this, propertyKey, descriptor)
-  return descriptor
+// target: Class
+function createClassObservableDecorator(TargetClass: any) {
+  function wrap(...args: any[]) {
+    // const instance = new TargetClass(...args)
+    return createAtom(new TargetClass(...args))
+  }
+  return wrap as any
 }
 
 const observableFactories = {
@@ -38,18 +26,19 @@ const observableFactories = {
   }
 }
 
-export function observable<T>(target: T): T
-export function observable(target: Object, propertyKey: string, baseDescriptor?: PropertyDescriptor): void
-export function observable<T>(arg1: T, arg2?: string, arg3?: PropertyDescriptor): any {
-  if (!(typeof arg1 === 'object' || typeof arg1 === 'function')) {
-    throw Error('only accept an object')
+export function observable<T>(target: T): T {
+  // observable(model)
+  if (typeof target === 'object') {
+    return createAtom(target) as T
   }
 
-  if (typeof arg2 === 'string') {
-    return createClassPropDecorator(arg1, arg1.constructor.name + '.' + arg2, arg3 as any)
+  // @observable
+  // Class Model {...}
+  if (typeof target === 'function') {
+    return createClassObservableDecorator(target) as T
   }
 
-  return createAtom(arg1)
+  throw Error('only accept an plain object or a Class')
 }
 
 Object.keys(observableFactories).forEach(name => (observable[name] = observableFactories[name]))
