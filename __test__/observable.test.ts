@@ -23,41 +23,41 @@ test('observer of array', () => {
   expect(b.toArray()).toEqual(['Adam', 'David'])
 })
 
-test('@observer', () => {
-  const b = buffer()
-  class Person {
-    public name = 'Adam'
-    public family = {
-      father: {
-        name: 'daddy'
-      },
-      mother: {
-        name: 'mummy'
-      }
-    }
-    public pets = [
-      {
-        type: 'cat',
-        name: 'Cathy'
-      }
-    ]
+// test('@observer', () => {
+//   const b = buffer()
+//   class Person {
+//     public name = 'Adam'
+//     public family = {
+//       father: {
+//         name: 'daddy'
+//       },
+//       mother: {
+//         name: 'mummy'
+//       }
+//     }
+//     public pets = [
+//       {
+//         type: 'cat',
+//         name: 'Cathy'
+//       }
+//     ]
 
-    @observable
-    public skills: string[] = ['eat', 'sleep']
+//     @observable
+//     public skills: string[] = ['eat', 'sleep']
 
-    @action
-    public addSkills(newSkill: string) {
-      this.skills.unshift(newSkill)
-    }
-  }
+//     @action
+//     public addSkills(newSkill: string) {
+//       this.skills.unshift(newSkill)
+//     }
+//   }
 
-  const p = new Person()
+//   const p = new Person()
 
-  autorun(() => {
-    b(p.skills[0])
-  })
+//   autorun(() => {
+//     b(p.skills[0])
+//   })
 
-  p.addSkills('code1')
+//   p.addSkills('code1')
 
-  expect(b.toArray()).toEqual(['eat', 'code1'])
-})
+//   expect(b.toArray()).toEqual(['eat', 'code1'])
+// })
