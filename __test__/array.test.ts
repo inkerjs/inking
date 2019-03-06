@@ -1,7 +1,7 @@
 import { autorun, observable } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
-test('native method of array', () => {
+test('native method of array 1', () => {
   const obj = observable(getPlainObj())
   expect(obj.skills.slice()).toEqual(['eat', 'sleep'])
   obj.skills.push('code')
@@ -16,7 +16,7 @@ test('native method of array', () => {
   expect(obj.skills.concat()).toEqual(['s2', 'eat', 'sleep'])
 })
 
-test('native modify method', () => {
+test('native modify method 2', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
   autorun(() => {
@@ -30,7 +30,7 @@ test('native modify method', () => {
   expect(b.toArray()).toEqual([2, 3, 4, 3, 2])
 })
 
-test('native method of array', () => {
+test('native method of array 3', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
   autorun(() => {

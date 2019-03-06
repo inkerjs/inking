@@ -21,9 +21,11 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
       if (typeof value === 'function') {
         // FIXME: bind what object is really subtle
-        return makeFnInTransaction(value.bind(receiver))
+        // 1. modify source -- bind receiver
+        const bindTarget = receiver // receiver?
+        // const bindTarget = atom.proxy // proxy?
+        return makeFnInTransaction(value.bind(bindTarget))
       }
-
       // return a plain object to recursive make Atom
       return value
     },
