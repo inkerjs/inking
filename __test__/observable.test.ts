@@ -80,8 +80,8 @@ test('@observable', () => {
     // b2(p.name)
   })
 
-  p.addSkills('code3')
+  p.addSkills('code1')
   p.name = 'David'
-  expect(b1.toArray()).toEqual(['eat', 'code3'])
+  expect(b1.toArray()).toEqual(['eat', 'code1'])
   // expect(b2.toArray()).toEqual(['Adam', 'David'])
 })

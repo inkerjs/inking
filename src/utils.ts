@@ -1,6 +1,12 @@
 import { endBatch, startBatch } from './observer'
 
-export const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
+export function isPrimitive(value: any) {
+  return value === null || (typeof value !== 'object' && typeof value !== 'function')
+}
+
+export function isNativeMethod(prop: string, method: any) {
+  return method === Array.prototype[prop] || method === Object.prototype[prop]
+}
 
 export type IEqualsComparer<T> = (a: T, b: T) => boolean
 

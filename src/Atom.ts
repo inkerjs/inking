@@ -1,7 +1,7 @@
 import { globalState } from './globalState'
 import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
 import { $tinar, primitiveType } from './types'
-import { defaultComparer, isPrimitive, makeFnInTransaction } from './utils'
+import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
 
@@ -20,9 +20,17 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       }
       // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
       if (typeof value === 'function') {
+        let bindTarget = null
+        if (isNativeMethod(prop, target[prop])) {
+          // native method will directly modify source
+          bindTarget = receiver
+        } else {
+          // user-land method will be call
+          bindTarget = atom.proxy
+        }
         // FIXME: bind what object is really subtle
         // 1. modify source -- bind receiver
-        const bindTarget = receiver // receiver?
+        // const bindTarget = receiver // receiver?
         // const bindTarget = atom.proxy // proxy?
         return makeFnInTransaction(value.bind(bindTarget))
       }
