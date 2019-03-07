@@ -77,11 +77,11 @@ test('@observable', () => {
 
   autorun(() => {
     b1(p.skills[0])
-    // b2(p.name)
+    b2(p.name)
   })
 
   p.addSkills('code1')
   p.name = 'David'
-  expect(b1.toArray()).toEqual(['eat', 'code1'])
-  // expect(b2.toArray()).toEqual(['Adam', 'David'])
+  expect(b1.toArray()).toEqual(['eat', 'code1', 'code1'])
+  expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
 })
