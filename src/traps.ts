@@ -34,6 +34,11 @@ const createTraps = (): ProxyHandler<Atom> => {
     set(target, prop, value, receiver) {
       target.set(prop, value)
       return true
+    },
+    ownKeys(target) {
+      // TODO: bug with `Object.keys`
+      const keys = Reflect.ownKeys(target.source)
+      return keys
     }
   }
 }

@@ -45,6 +45,17 @@ test('inherit action method', () => {
   expect(b.toArray()).toEqual(['Adam', 'David'])
 })
 
+test('native Object method', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+
+  // TODO: Object.keys
+  expect(Object.getOwnPropertyNames(obj)).toEqual(['name', 'family', 'pets', 'skills'])
+  expect(Object.getOwnPropertyNames(obj.family)).toEqual(['father', 'mother'])
+  expect(Object.getOwnPropertyNames(obj.pets)).toEqual(['0', 'length'])
+  expect(Object.getOwnPropertyNames(obj.skills)).toEqual(['0', '1', 'length'])
+})
+
 test('@observable', () => {
   const b1 = buffer()
   const b2 = buffer()

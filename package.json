@@ -1,7 +1,7 @@
 {
   "name": "tinar",
   "version": "0.0.1",
-  "description": "object with history",
+  "description": "A lite version MobX based on `Proxy`",
   "main": "lib/index.js",
   "files": [
     "lib/"

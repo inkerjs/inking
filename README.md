@@ -7,7 +7,7 @@ Yet another version of MobX that implemented by awesome ES2015 `Proxy`.
 ### Making things observable
 
 - [x] observable
-- [ ] @observable
+- [x] @observable
 - [x] objects
 - [x] arrays
 - [ ] maps
