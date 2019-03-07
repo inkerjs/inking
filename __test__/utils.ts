@@ -9,7 +9,7 @@ export const buffer = () => {
   return res
 }
 
-export const getPlainObj = () => ({
+export const getPlainObj: any = () => ({
   name: 'Adam',
   family: {
     father: {

@@ -1,6 +1,6 @@
 import { globalState } from './globalState'
 import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
-import { $tinar, primitiveType } from './types'
+import { $getOriginSource, primitiveType } from './types'
 import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
 export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
@@ -9,6 +9,11 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
+
+      if (prop === $getOriginSource) {
+        return target
+      }
+
       if (isPrimitive(value)) {
         // dependency collection timing
         // register effect
@@ -28,6 +33,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
 
         return makeFnInTransaction(boundFn)
       }
+
       // return a plain object to recursive make Atom
       return value
     },
@@ -49,6 +55,10 @@ interface ISideEffects {
 
 // TODO: add generic <T> ?
 class Atom {
+  /**
+   * original input plain object
+   */
+  public value: any
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
   public source!: object
   public isBeingTracked = false
@@ -57,6 +67,7 @@ class Atom {
   public atomType!: AtomType
 
   public constructor(value: any) {
+    this.value = value
     switch (true) {
       case Array.isArray(value):
         this.atomType = `array`

@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { getCurrCollectingEffect, resetCurrCollectingEffect } from './observer'
+import { $getOriginSource, $isAtom } from './types'
 import { isPrimitive } from './utils'
 
 const createTraps = (): ProxyHandler<Atom> => {
@@ -7,6 +7,14 @@ const createTraps = (): ProxyHandler<Atom> => {
     get(target, prop, receiver) {
       // get value from source proxy
       const value = target.get(prop)
+
+      if (prop === $isAtom) {
+        return true
+      }
+
+      if (prop === $getOriginSource) {
+        return value
+      }
 
       // if it's already proxied, directly return the proxy
       if (target.isPropProxied(prop as any)) {
