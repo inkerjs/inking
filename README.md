@@ -1,4 +1,7 @@
-# TINAR
+# Tinar
+
+![](https://img.shields.io/circleci/project/github/fi3ework/tinar/master.svg?style=flat)
+![](https://img.shields.io/npm/v/tinar.svg?color=%23F93D44&style=flat)
 
 Yet another version of MobX that implemented by awesome ES2015 `Proxy`.
 
