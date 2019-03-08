@@ -6,7 +6,7 @@
     <p align="center">
         <i>
             <a href="https://www.npmjs.com/package/tinar">
-              <img src="https://img.shields.io/npm/v/tinar.svg?color=%23F93D44&style=flat" alt="NPM Version">
+              <img src="https://img.shields.io/npm/v/tinar.svg?color=%2361AFEF" alt="NPM Version">
             </a>
             <a href="https://travis-ci.org/dobjs/dob">
               <img src="https://img.shields.io/circleci/project/github/fi3ework/tinar/master.svg?style=flat" alt="Build Status">

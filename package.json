@@ -1,7 +1,7 @@
 {
   "name": "tinar",
-  "version": "0.0.1",
-  "description": "A lite version MobX based on `Proxy`",
+  "version": "0.0.2",
+  "description": "🍓Lite version MobX based on Proxy.",
   "main": "lib/index.js",
   "files": [
     "lib/"
@@ -14,18 +14,19 @@
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "tslint './src/**/*.?(ts|tsx)'"
   },
   "author": "fi3ework",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fi3ework/histor"
+    "url": "https://github.com/fi3ework/tinar"
   },
   "bugs": {
-    "url": "https://github.com/fi3ework/histor"
+    "url": "https://github.com/fi3ework/tinar"
   },
-  "homepage": "https://github.com/fi3ework/histor",
+  "homepage": "https://github.com/fi3ework/tinar",
   "devDependencies": {
     "@types/jest": "^24.0.5",
     "coveralls": "^3.0.3",
@@ -34,15 +35,11 @@
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "tslint-config-alloy": "^0.2.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.3.3"
   },
-  "config": {
-    "commitizen": {
-      "path": "git-cz"
-    }
-  },
-  "dependencies": {
-    "global": "^4.3.2",
-    "tslint-config-prettier": "^1.18.0"
-  }
+  "dependencies": {},
+  "pre-commit": [
+    "lint"
+  ]
 }
