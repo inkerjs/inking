@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { $getOriginSource, $isAtom } from './types'
+import { $atomOfProxy, $getOriginSource, $isProxied } from './types'
 import { isPrimitive } from './utils'
 
 const createTraps = (): ProxyHandler<Atom> => {
@@ -8,8 +8,12 @@ const createTraps = (): ProxyHandler<Atom> => {
       // get value from source proxy
       const value = target.get(prop)
 
-      if (prop === $isAtom) {
+      if (prop === $isProxied) {
         return true
+      }
+
+      if (prop === $atomOfProxy) {
+        return target
       }
 
       if (prop === $getOriginSource) {

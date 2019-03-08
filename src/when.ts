@@ -1,6 +1,6 @@
 import { resetCurrCollectingEffect, setCurrCollectingEffect, SideEffect } from './observer'
 
-type predicateType = () => boolean
+export type predicateType = () => boolean
 
 export const when = (predicate: predicateType, fn: Function) => {
   const sideEffect = new SideEffect(fn)

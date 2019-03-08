@@ -1,9 +1,34 @@
 import { globalState } from './globalState'
 import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
-import { $getOriginSource, primitiveType } from './types'
+import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
 import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
-export type AtomType = `object` | `array` // TODO: Set, Map, WeakMap, primitive value
+export function isProxied(thing: any) {
+  return !!thing[$isProxied]
+}
+
+export function getSourceFromAtomProxy(thing: any) {
+  if (isProxied(thing)) {
+    return thing[$getOriginSource]
+  }
+  return thing
+}
+
+export function getAtomFromProxy<T>(thing: T): Atom | T {
+  if (isProxied(thing)) {
+    return thing[$atomOfProxy]
+  }
+  return thing
+}
+
+export interface IChange {
+  oldValue: any
+  newValue: any
+}
+
+// TODO: Set, Map, WeakMap, primitive value
+// But, what does it used for :-) ?
+export type AtomType = `object` | `array`
 
 const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
@@ -25,13 +50,13 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       }
       // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
       if (typeof value === 'function') {
-        let boundFn = value
+        let mayBoundFn = value
         if (isNativeMethod(prop, target[prop])) {
           // native method will directly modify source, so bind it to source
-          boundFn = value.bind(receiver)
+          mayBoundFn = value.bind(receiver)
         }
 
-        return makeFnInTransaction(boundFn)
+        return makeFnInTransaction(mayBoundFn)
       }
 
       // return a plain object to recursive make Atom
@@ -40,9 +65,25 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
     // native and external function will all call this setters
     set(target, prop, value, receiver) {
       // TODO: interceptor here?
-      // const oldValue = Reflect.get(target, prop, receiver)
-      // const newValue = value
-      Reflect.set(target, prop, value, receiver)
+      const currPropInterceptor = atom.interceptors[prop]
+      const oldValue = Reflect.get(target, prop, receiver)
+      const newValue = value
+      const defaultChange = {
+        oldValue,
+        newValue
+      }
+      let resultOfInterceptor: IChange
+      if (typeof currPropInterceptor !== 'function') {
+        // no interceptor
+        resultOfInterceptor = defaultChange
+      } else {
+        resultOfInterceptor = currPropInterceptor(defaultChange)
+      }
+
+      // null means the change is intercepted
+      if (resultOfInterceptor === null) return true
+      // or normal change
+      Reflect.set(target, prop, resultOfInterceptor.newValue, receiver)
       reportChanged(prop)
       return true
     }
@@ -65,6 +106,7 @@ class Atom {
   public proxiedProps: (string | number | symbol)[] = []
   public sideEffects: ISideEffects = {}
   public atomType!: AtomType
+  public interceptors = {}
 
   public constructor(value: any) {
     this.value = value
