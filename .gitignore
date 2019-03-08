@@ -6,4 +6,3 @@ coverage
 lib
 src/example.js
 src/example.ts
-/.coveralls.yml

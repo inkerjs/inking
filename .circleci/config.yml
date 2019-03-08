@@ -36,3 +36,7 @@ jobs:
       # run tests!
       # TODO: yarn lint && yarn test
       - run: yarn test
+
+      - run:
+          name: post coverage
+          command: cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
