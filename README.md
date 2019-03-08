@@ -31,7 +31,7 @@ Yet another version of MobX that implemented by awesome ES2015 `Proxy`.
 
 ### Utility functions
 
-- [ ] toJS
+- [x] toJS
 - [ ] extendObservable
 - [ ] createAtom
 - [ ] intercept & observe

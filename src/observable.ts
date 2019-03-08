@@ -17,7 +17,11 @@ function createClassObservableDecorator(TargetClass: any) {
   return wrap as any
 }
 
-const observableFactories = {
+export interface IObservableFactories {
+  box<T = any>(value: T): T
+}
+
+const observableFactories: IObservableFactories = {
   box<T = any>(value: T) {
     if (typeof value === 'object') {
       throw Error(`do not use \`observable.box\` to make a primitive value to be observable, use observable directly.`)
@@ -25,6 +29,8 @@ const observableFactories = {
     return createAtom(value)
   }
 }
+
+type IObservable = <T>(target: T) => T
 
 export function observable<T>(target: T): T {
   // observable(model)
