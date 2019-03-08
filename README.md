@@ -11,9 +11,7 @@
             <a href="https://travis-ci.org/dobjs/dob">
               <img src="https://img.shields.io/circleci/project/github/fi3ework/tinar/master.svg?style=flat" alt="Build Status">
             </a>
-            <a href="https://codecov.io/github/dobjs/dob">
-              <img src="https://img.shields.io/coveralls/github/fi3ework/tinar.svg" alt="Code Coverage">
-            </a>
+<a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
         </i>
     </p>
 </p>
