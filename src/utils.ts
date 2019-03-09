@@ -4,6 +4,11 @@ export function isPrimitive(value: any) {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
 }
 
+export interface Lambda {
+  (): void
+  name?: string
+}
+
 export function isNativeMethod(prop: string, method: any) {
   return method === Array.prototype[prop] || method === Object.prototype[prop]
 }
