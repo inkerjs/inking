@@ -1,11 +1,11 @@
-import { autorun, createComputed, observable } from '../src/index'
+import { autorun, computed, observable } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
 test('read computed value from observable value', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
 
-  const c1 = createComputed(() => {
+  const c1 = computed(() => {
     return obj.skills.join('_')
   })
 
@@ -31,7 +31,7 @@ test('read computed value from observable value', () => {
 test('autorun of computed', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
-  const c1 = createComputed(() => {
+  const c1 = computed(() => {
     return obj.skills.join('_')
   })
   autorun(() => {
@@ -46,7 +46,7 @@ test('equals', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
 
-  const c1 = createComputed(
+  const c1 = computed(
     () => {
       return obj.skills.join('_')
     },

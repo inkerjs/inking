@@ -1,6 +1,6 @@
 import Atom from './Atom'
 import { autorun, getCurrCollectingEffect, SideEffect } from './observer'
-import { defaultComparer, IEqualsComparer } from './utils'
+import { defaultComparer, IEqualsComparer, invariant } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
 export default class Computed {
@@ -85,3 +85,22 @@ export const createComputed = (getFn: Function, options?: IComputedValueOptions<
   }
   return computed
 }
+
+/**
+ * Decorator for class properties: @computed get value() { return expr; }.
+ * For legacy purposes also invokable as ES5 observable created: `computed(() => expr)`;
+ */
+export const computed: any = function computed(arg1, arg2, arg3) {
+  if (typeof arg2 === 'string') {
+    // @computed
+    // Class Model {...}
+    // return computedDecorator.apply(null, arguments)
+  }
+
+  // computed(expr, options?)
+  if (process.env.NODE_ENV !== 'production') {
+    invariant(typeof arg1 === 'function', 'First argument to `computed` should be an expression.')
+    invariant(arguments.length < 3, 'Computed takes one or two arguments if used as function')
+  }
+  return createComputed(arg1, arg2)
+} as any
