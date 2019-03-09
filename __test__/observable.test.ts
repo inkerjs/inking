@@ -47,13 +47,32 @@ test('inherit action method', () => {
 
 test('native Object method', () => {
   const obj = observable(getPlainObj())
-  const b = buffer()
 
   // TODO: Object.keys
   expect(Object.getOwnPropertyNames(obj)).toEqual(['name', 'family', 'pets', 'skills'])
   expect(Object.getOwnPropertyNames(obj.family)).toEqual(['father', 'mother'])
   expect(Object.getOwnPropertyNames(obj.pets)).toEqual(['0', 'length'])
   expect(Object.getOwnPropertyNames(obj.skills)).toEqual(['0', '1', 'length'])
+})
+
+test('dynamic properties', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+
+  obj.friends = [
+    {
+      name: 'Jack',
+      age: 25
+    }
+  ]
+
+  autorun(() => {
+    b(obj.friends[0].age)
+  })
+
+  obj.friends[0].age = 26
+
+  expect(b.toArray()).toEqual([25, 26])
 })
 
 test('@observable', () => {
@@ -97,43 +116,43 @@ test('@observable', () => {
   expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
 })
 
-test('@observable with arguments', () => {
-  const b1 = buffer()
-  const b2 = buffer()
-  @observable('name', 'family')
-  class Person {
-    public name = 'Adam'
-    public family = {
-      father: {
-        name: 'daddy'
-      },
-      mother: {
-        name: 'mummy'
-      }
-    }
-    public pets = [
-      {
-        type: 'cat',
-        name: 'Cathy'
-      }
-    ]
+// test('@observable with arguments', () => {
+//   const b1 = buffer()
+//   const b2 = buffer()
+//   @observable('name', 'family')
+//   class Person {
+//     public name = 'Adam'
+//     public family = {
+//       father: {
+//         name: 'daddy'
+//       },
+//       mother: {
+//         name: 'mummy'
+//       }
+//     }
+//     public pets = [
+//       {
+//         type: 'cat',
+//         name: 'Cathy'
+//       }
+//     ]
 
-    public skills: string[] = ['eat', 'sleep']
+//     public skills: string[] = ['eat', 'sleep']
 
-    public addSkills(newSkill: string) {
-      this.skills.unshift(newSkill)
-    }
-  }
+//     public addSkills(newSkill: string) {
+//       this.skills.unshift(newSkill)
+//     }
+//   }
 
-  const p = new Person()
+//   const p = new Person()
 
-  autorun(() => {
-    b1(p.skills[0])
-    // b2(p.name)
-  })
+//   autorun(() => {
+//     b1(p.skills[0])
+//     // b2(p.name)
+//   })
 
-  p.addSkills('code1')
-  // p.name = 'David'
-  expect(b1.toArray()).toEqual(['eat'])
-  // expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
-})
+//   p.addSkills('code1')
+//   // p.name = 'David'
+//   expect(b1.toArray()).toEqual(['eat'])
+//   // expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
+// })

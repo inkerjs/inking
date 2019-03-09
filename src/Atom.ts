@@ -60,7 +60,6 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
     },
     // native and external function will all call this setters
     set(target, prop, value, receiver) {
-      // TODO: interceptor here?
       const currPropInterceptor = atom.interceptors[prop]
       const oldValue = Reflect.get(target, prop, receiver)
       const newValue = value
