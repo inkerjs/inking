@@ -4,16 +4,16 @@ import { isPrimitive } from './utils'
 
 const createTraps = (): ProxyHandler<Atom> => {
   return {
-    get(target, prop, receiver) {
+    get(atom, prop, receiver) {
       // get value from source proxy
-      const value = target.get(prop)
-
+      const value = atom.get(prop)
+      // TODO: use Switch
       if (prop === $isProxied) {
         return true
       }
 
       if (prop === $atomOfProxy) {
-        return target
+        return atom
       }
 
       if (prop === $getOriginSource) {
@@ -21,8 +21,15 @@ const createTraps = (): ProxyHandler<Atom> => {
       }
 
       // if it's already proxied, directly return the proxy
-      if (target.isPropProxied(prop as any)) {
-        const existAtom = target.proxiedProps[prop]
+      // TODO: prop could be string | number | symbol, but now only consider string
+      // FIXME: this is not deeply non-observable, it just avoid one level observable proxy
+      if (atom.pickedProps.length > 0 && atom.pickedProps.indexOf(prop.toString()) < 0) {
+        return value
+      }
+
+      // if it's already proxied, directly return the proxy
+      if (atom.isPropProxied(prop as any)) {
+        const existAtom = atom.proxiedProps[prop]
         return existAtom.proxy
       }
 
@@ -40,16 +47,16 @@ const createTraps = (): ProxyHandler<Atom> => {
       const childAtom = new Atom(value)
       const childProxy = new Proxy<Atom>(childAtom, createTraps())
       childAtom.proxy = childProxy
-      target.addProxiedProp(prop as any, childAtom)
+      atom.addProxiedProp(prop as any, childAtom)
       return childProxy
     },
-    set(target, prop, value, receiver) {
-      target.set(prop, value)
+    set(atom, prop, value, receiver) {
+      atom.set(prop, value)
       return true
     },
-    ownKeys(target) {
+    ownKeys(atom) {
       // TODO: bug with `Object.keys`
-      const keys = Reflect.ownKeys(target.source)
+      const keys = Reflect.ownKeys(atom.source)
       return keys
     }
   }

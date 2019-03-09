@@ -106,6 +106,12 @@ class Atom {
   public sideEffects: ISideEffects = {}
   public atomType!: AtomType
   public interceptors = {}
+  public ignoredProps = []
+  /**
+   * only prop in pickedProps will be observable, used for @observable('a', 'b', 'c')
+   * TODO: can pass a regex or a filter function
+   */
+  public pickedProps: string[] = []
 
   public constructor(value: any) {
     this.value = value
