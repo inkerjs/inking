@@ -7,17 +7,15 @@ const createTraps = (): ProxyHandler<Atom> => {
     get(atom, prop, receiver) {
       // get value from source proxy
       const value = atom.get(prop)
-      // TODO: use Switch
-      if (prop === $isProxied) {
-        return true
-      }
 
-      if (prop === $atomOfProxy) {
-        return atom
-      }
-
-      if (prop === $getOriginSource) {
-        return value
+      // internal method
+      switch (prop) {
+        case $isProxied:
+          return true
+        case $atomOfProxy:
+          return atom
+        case $getOriginSource:
+          return value
       }
 
       // if it's already proxied, directly return the proxy

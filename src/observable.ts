@@ -1,8 +1,7 @@
 import Atom, { getAtomFromProxy } from './Atom'
 import createTraps from './traps'
 
-// TODO: change name, createAtom indeed return a proxy, not an atom
-function createAtom<T>(target: T) {
+function createProxyOfAtom<T>(target: T) {
   const atom = new Atom(target)
   const proxy = new Proxy(atom, createTraps())
   atom.proxy = proxy
@@ -21,7 +20,7 @@ function createClassObservableDecorator(props: IDecoratorPropsRestArgs) {
 
   return function decorateClassObservable(TargetClass: any) {
     function wrap(...args: any[]) {
-      const proxy = createAtom(new TargetClass(...args))
+      const proxy = createProxyOfAtom(new TargetClass(...args))
       const atom = getAtomFromProxy(proxy) as Atom
       atom.pickedProps = pickedProps
       return proxy
@@ -34,7 +33,7 @@ function createClassObservableDecorator(props: IDecoratorPropsRestArgs) {
 // Class Model {...}
 function decorateClassObservable(TargetClass: any) {
   function wrap(...args: any[]) {
-    return createAtom(new TargetClass(...args))
+    return createProxyOfAtom(new TargetClass(...args))
   }
   return wrap as any
 }
@@ -48,7 +47,7 @@ const observableFactories: IObservableFactories = {
     if (typeof value === 'object') {
       throw Error(`do not use \`observable.box\` to make a primitive value to be observable, use observable directly.`)
     }
-    return createAtom(value)
+    return createProxyOfAtom(value)
   }
 }
 
@@ -63,7 +62,7 @@ export function observable(...props: IDecoratorPropsRestArgs): any {
 
   // observable(model)
   if (typeof arg1 === 'object' && props.length === 1) {
-    return createAtom(arg1) as any
+    return createProxyOfAtom(arg1) as any
   }
 
   // @observable
