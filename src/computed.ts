@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { autorun, getCurrCollectingEffect, resetCurrCollectingEffect, SideEffect } from './observer'
+import { autorun, getCurrCollectingEffect, SideEffect } from './observer'
 import { defaultComparer, IEqualsComparer } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)

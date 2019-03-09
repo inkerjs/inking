@@ -1,5 +1,5 @@
 import { globalState } from './globalState'
-import { endBatch, getCurrCollectingEffect, SideEffect, startBatch } from './observer'
+import { getCurrCollectingEffect, SideEffect } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
 import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
@@ -25,10 +25,6 @@ export interface IChange {
   oldValue: any
   newValue: any
 }
-
-// TODO: Set, Map, WeakMap, primitive value
-// But, what does it used for :-) ?
-export type AtomType = `object` | `array`
 
 const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
@@ -94,6 +90,9 @@ interface ISideEffects {
   [prop: string]: SideEffect[]
 }
 
+// TODO: Set, Map, WeakMap, primitive value
+// But, what does it used for :-) ?
+export type AtomType = `object` | `array`
 // TODO: add generic <T> ?
 class Atom {
   /**
