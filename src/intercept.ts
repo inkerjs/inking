@@ -1,10 +1,10 @@
-import Atom, { getAtomFromProxy, IChange } from './Atom'
+import Atom, { getAtomOfProxy, IChange } from './Atom'
 import { Lambda } from './utils'
 
 type IInterceptor = (IChange) => IChange | null
 
 function interceptProperty(thing, prop, handler) {
-  const atom = getAtomFromProxy(thing)
+  const atom = getAtomOfProxy(thing)
   if (!(atom instanceof Atom)) {
     throw new Error('thing[prop] should be a atom')
   }

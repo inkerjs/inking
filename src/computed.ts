@@ -1,5 +1,6 @@
 import Atom from './Atom'
-import { autorun, getCurrCollectingEffect, SideEffect } from './observer'
+import { autoUpdateComputedValue, getCurrCollectingReactionEffect, SideEffect } from './observer'
+import { IDecoratorPropsRestArgs } from './types'
 import { defaultComparer, IEqualsComparer, invariant } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
@@ -32,7 +33,7 @@ export default class Computed {
   public constructor(initFn: Function) {
     this.valueComputeFn = initFn
     const boundRecompute = this.reComputeAndTrigger.bind(this)
-    autorun(boundRecompute, 'computed')
+    autoUpdateComputedValue(boundRecompute, 'computed')
   }
 
   public reComputeAndTrigger() {
@@ -49,7 +50,7 @@ export default class Computed {
   }
 
   public get() {
-    this.addReaction(getCurrCollectingEffect())
+    this.addReaction(getCurrCollectingReactionEffect())
     return this.value
   }
 
@@ -86,21 +87,30 @@ export const createComputed = (getFn: Function, options?: IComputedValueOptions<
   return computed
 }
 
-/**
- * Decorator for class properties: @computed get value() { return expr; }.
- * For legacy purposes also invokable as ES5 observable created: `computed(() => expr)`;
- */
-export const computed: any = function computed(arg1, arg2, arg3) {
-  if (typeof arg2 === 'string') {
-    // @computed
-    // Class Model {...}
-    // return computedDecorator.apply(null, arguments)
+function createComputedDecorator(props: IDecoratorPropsRestArgs) {
+  let pickedProps: string[] = props as string[]
+
+  return function decorateClassObservable(TargetClass: any) {
+    // function wrap(...args: any[]) {
+    //   const proxy = createProxyOfAtom(new TargetClass(...args))
+    //   const atom = getAtomOfProxy(proxy) as Atom
+    //   atom.pickedProps = pickedProps
+    //   return proxy
+    // }
+    // return wrap as any
+  }
+}
+
+// TODO: add IComputed type
+export function computed(getFn: Function): any
+export function computed(...args): any {
+  // const c1 = computed(()=> {...})
+  if (typeof args[0] === 'function') {
+    return createComputed(args[0], args[1])
   }
 
-  // computed(expr, options?)
-  if (process.env.NODE_ENV !== 'production') {
-    invariant(typeof arg1 === 'function', 'First argument to `computed` should be an expression.')
-    invariant(arguments.length < 3, 'Computed takes one or two arguments if used as function')
-  }
-  return createComputed(arg1, arg2)
-} as any
+  // @computed
+  // Class Model {...}
+  // TODO: Defensive programming
+  return createComputedDecorator(args)
+}

@@ -1,4 +1,4 @@
-import { resetCurrCollectingEffect, setCurrCollectingEffect, SideEffect } from './observer'
+import { resetCurrCollectingReactionEffect, setCurrCollectingReactionEffect, SideEffect } from './observer'
 
 export type predicateType = () => boolean
 
@@ -7,7 +7,7 @@ export const when = (predicate: predicateType, fn: Function) => {
   sideEffect.predictFn = predicate
   // `predicate` function will collect dependencies
   // `fn` is the real callback will be triggered
-  setCurrCollectingEffect(sideEffect)
+  setCurrCollectingReactionEffect(sideEffect)
   predicate()
-  resetCurrCollectingEffect()
+  resetCurrCollectingReactionEffect()
 }

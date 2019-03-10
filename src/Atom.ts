@@ -1,5 +1,6 @@
+import { computed } from './computed'
 import { globalState } from './globalState'
-import { getCurrCollectingEffect, SideEffect } from './observer'
+import { getCurrCollectingReactionEffect, SideEffect, getCurrCollectingComputedEffect } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
 import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
@@ -14,7 +15,7 @@ export function getSourceFromAtomProxy(thing: any) {
   return thing
 }
 
-export function getAtomFromProxy<T>(thing: T): Atom | T {
+export function getAtomOfProxy<T>(thing: T): Atom | T {
   if (isProxied(thing)) {
     return thing[$atomOfProxy]
   }
@@ -31,6 +32,16 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
 
+      // intercept getter
+      const proto = Reflect.getPrototypeOf(target)
+      const des = Reflect.getOwnPropertyDescriptor(proto, prop)
+      if (des && des.get) {
+        const getterFn = des.get.bind(atom.proxy)
+        const newComputed = computed(getterFn)
+        atom.addProxiedProp(prop, newComputed)
+        return newComputed.get()
+      }
+
       if (prop === $getOriginSource) {
         return target
       }
@@ -38,9 +49,13 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       if (isPrimitive(value)) {
         // dependency collection timing
         // register effect
-        const currSideEffect = getCurrCollectingEffect()
-        if (currSideEffect) {
-          atom.addReaction(prop as any, currSideEffect)
+        const currReactionSideEffect = getCurrCollectingReactionEffect()
+        const currComputedSideEffect = getCurrCollectingComputedEffect()
+        if (currReactionSideEffect) {
+          atom.addReaction(prop as any, currReactionSideEffect)
+        }
+        if (currComputedSideEffect) {
+          atom.addReaction(prop as any, currComputedSideEffect)
         }
         return value
       }
@@ -101,16 +116,16 @@ class Atom {
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
   public source!: object
   public isBeingTracked = false
-  public proxiedProps: (string | number | symbol)[] = []
+  public proxiedProps = {}
   public sideEffects: ISideEffects = {}
   public atomType!: AtomType
   public interceptors = {}
-  public ignoredProps = []
   /**
    * only prop in pickedProps will be observable, used for @observable('a', 'b', 'c')
    * TODO: can pass a regex or a filter function
    */
   public pickedProps: string[] = []
+  public computedProps: string[] = []
 
   public constructor(value: any) {
     this.value = value
@@ -152,7 +167,7 @@ class Atom {
   public addReaction = (prop: string | number, handler: SideEffect | null) => {
     if (handler === null) return
 
-    if (this.proxiedProps.length === 0) {
+    if (Object.keys(this.proxiedProps).length === 0) {
       this.isBeingTracked = true
     }
 

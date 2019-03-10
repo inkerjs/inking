@@ -1,4 +1,4 @@
-import { action, autorun, observable } from '../src/index'
+import { action, autorun, observable, toJS } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
 test('key/value access right', () => {
@@ -73,6 +73,26 @@ test('dynamic properties', () => {
   obj.friends[0].age = 26
 
   expect(b.toArray()).toEqual([25, 26])
+})
+
+test('nested native Object method', () => {
+  const obj = observable(getPlainObj())
+
+  const addToStart = thing => {
+    obj.skills.unshift(thing)
+  }
+
+  const addToEnd = thing => {
+    obj.skills.push(thing)
+  }
+
+  const add = thing => {
+    addToStart(thing)
+    addToEnd(thing)
+  }
+
+  add('xxx')
+  expect(toJS(obj.skills)).toEqual(['xxx', 'eat', 'sleep', 'xxx'])
 })
 
 test('@observable', () => {

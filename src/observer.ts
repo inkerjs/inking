@@ -1,7 +1,8 @@
 import Atom from './Atom'
 import { globalState } from './globalState'
 
-let currentCollectingEffect: SideEffect | null = null
+let currentCollectingReactionEffect: SideEffect | null = null
+let currentCollectingComputedEffect: SideEffect | null = null
 type SideEffectType = `computed` | `reaction`
 
 export interface IEffect {
@@ -81,16 +82,28 @@ export class SideEffect implements IEffect {
   }
 }
 
-export const getCurrCollectingEffect = () => {
-  return currentCollectingEffect
+export const getCurrCollectingReactionEffect = () => {
+  return currentCollectingReactionEffect
 }
 
-export const setCurrCollectingEffect = (effect: SideEffect) => {
-  currentCollectingEffect = effect
+export const getCurrCollectingComputedEffect = () => {
+  return currentCollectingComputedEffect
 }
 
-export const resetCurrCollectingEffect = () => {
-  currentCollectingEffect = null
+export const setCurrCollectingReactionEffect = (effect: SideEffect) => {
+  currentCollectingReactionEffect = effect
+}
+
+export const resetCurrCollectingReactionEffect = () => {
+  currentCollectingReactionEffect = null
+}
+
+export const setCurrCollectingComputedEffect = (effect: SideEffect) => {
+  currentCollectingComputedEffect = effect
+}
+
+export const resetCurrCollectingComputedEffect = () => {
+  currentCollectingComputedEffect = null
 }
 
 export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
@@ -98,7 +111,16 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  setCurrCollectingEffect(sideEffect)
+  setCurrCollectingReactionEffect(sideEffect)
   sideEffect.sideEffectFn()
-  resetCurrCollectingEffect()
+  resetCurrCollectingReactionEffect()
+}
+
+export const autoUpdateComputedValue = (fn: any, type: SideEffectType = 'reaction') => {
+  // collect dependency
+  const sideEffect = new SideEffect(fn)
+  sideEffect.type = type
+  setCurrCollectingComputedEffect(sideEffect)
+  sideEffect.sideEffectFn()
+  resetCurrCollectingComputedEffect()
 }

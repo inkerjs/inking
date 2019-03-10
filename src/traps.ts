@@ -1,6 +1,7 @@
 import Atom from './Atom'
 import { $atomOfProxy, $getOriginSource, $isProxied } from './types'
 import { isPrimitive } from './utils'
+import Computed from './computed'
 
 const createTraps = (): ProxyHandler<Atom> => {
   return {
@@ -27,8 +28,12 @@ const createTraps = (): ProxyHandler<Atom> => {
 
       // if it's already proxied, directly return the proxy
       if (atom.isPropProxied(prop as any)) {
-        const existAtom = atom.proxiedProps[prop]
-        return existAtom.proxy
+        const existAtomOrComputed = atom.proxiedProps[prop]
+        if (existAtomOrComputed instanceof Computed) {
+          // it's a computed value
+          return existAtomOrComputed.get()
+        }
+        return existAtomOrComputed.proxy
       }
 
       // primitive value: recursive end
@@ -53,7 +58,7 @@ const createTraps = (): ProxyHandler<Atom> => {
       return true
     },
     ownKeys(atom) {
-      // FIXME: bug with `Object.keys`
+      // FIXME: mysterious bug with `Object.keys`
       const keys = Reflect.ownKeys(atom.source)
       return keys
     }
