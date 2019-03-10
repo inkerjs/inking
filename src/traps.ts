@@ -1,7 +1,7 @@
 import Atom from './Atom'
+import Computed from './computed'
 import { $atomOfProxy, $getOriginSource, $isProxied } from './types'
 import { isPrimitive } from './utils'
-import Computed from './computed'
 
 const createTraps = (): ProxyHandler<Atom> => {
   return {

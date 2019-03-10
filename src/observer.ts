@@ -41,7 +41,10 @@ export function runPendingReactions() {
       globalState.pendingReactions.clear()
       return
     }
-
+    // FIXME: this is just a circumvention
+    // if (sideEffect.type === 'computed') {
+    //   return
+    // }
     sideEffect.runEffectWithPredict()
   })
 
@@ -77,6 +80,7 @@ export class SideEffect implements IEffect {
       if (typeof this.dependenciesCollector === 'function') {
         collectorRes = this.dependenciesCollector()
       }
+
       this.sideEffectFn(collectorRes)
     }
   }

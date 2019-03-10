@@ -102,7 +102,7 @@ function createComputedDecorator(props: IDecoratorPropsRestArgs) {
 }
 
 // TODO: add IComputed type
-export function computed(getFn: Function): any
+export function computed(getFn: Function, options?: IComputedValueOptions<any>): any
 export function computed(...args): any {
   // const c1 = computed(()=> {...})
   if (typeof args[0] === 'function') {

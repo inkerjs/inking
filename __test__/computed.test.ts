@@ -1,4 +1,4 @@
-import { autorun, computed, observable } from '../src/index'
+import { action, autorun, computed, observable } from '../src/index'
 import { buffer, getPlainObj } from './utils'
 
 test('read computed value from observable value', () => {
@@ -66,6 +66,53 @@ test('equals', () => {
 
   expect(b.toArray()).toEqual(['eat_sleep', 'code_eAt_sleep'])
 })
+
+// test('@computed', () => {
+//   const b1 = buffer()
+//   const b2 = buffer()
+
+//   @observable
+//   class Person {
+//     public name = 'Adam'
+//     public family = {
+//       father: {
+//         name: 'daddy'
+//       },
+//       mother: {
+//         name: 'mummy'
+//       }
+//     }
+//     public pets = [
+//       {
+//         type: 'cat',
+//         name: 'Cathy'
+//       }
+//     ]
+
+//     public skills: string[] = ['eat', 'sleep']
+
+//     public get skillsCount() {
+//       return this.skills.length
+//     }
+
+//     public addSkills(newSkill: string) {
+//       this.skills.unshift(newSkill)
+//     }
+//   }
+
+//   const p = new Person()
+
+//   autorun(() => {
+//     b1(p.skillsCount)
+//   })
+
+//   action(() => {
+//     p.addSkills('code')
+//   })()
+
+//   expect(b1.toArray()).toEqual([2, 3])
+//   // expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
+// })
 
 // TODO: add `spy` for debug?
 // test('lazy recompute', () => {
