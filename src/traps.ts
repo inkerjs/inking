@@ -18,9 +18,9 @@ const createTraps = (): ProxyHandler<Atom> => {
           return value
       }
 
-      // if it's already proxied, directly return the proxy
       // TODO: prop could be string | number | symbol, but now only consider string
-      // FIXME: this is not deeply non-observable, it just avoid one level observable proxy
+      // NOTE: if a prop is not to be a observable property, it returns here
+      // there deep properties will not be observable either, it stopped the recursive.
       if (atom.pickedProps.length > 0 && atom.pickedProps.indexOf(prop.toString()) < 0) {
         return value
       }
@@ -53,7 +53,7 @@ const createTraps = (): ProxyHandler<Atom> => {
       return true
     },
     ownKeys(atom) {
-      // TODO: bug with `Object.keys`
+      // FIXME: bug with `Object.keys`
       const keys = Reflect.ownKeys(atom.source)
       return keys
     }

@@ -116,43 +116,50 @@ test('@observable', () => {
   expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
 })
 
-// test('@observable with arguments', () => {
-//   const b1 = buffer()
-//   const b2 = buffer()
-//   @observable('name', 'family')
-//   class Person {
-//     public name = 'Adam'
-//     public family = {
-//       father: {
-//         name: 'daddy'
-//       },
-//       mother: {
-//         name: 'mummy'
-//       }
-//     }
-//     public pets = [
-//       {
-//         type: 'cat',
-//         name: 'Cathy'
-//       }
-//     ]
+test('@observable with arguments', () => {
+  const b1 = buffer()
+  const b2 = buffer()
+  const b3 = buffer()
+  @observable('name', 'family')
+  class Person {
+    public name = 'Adam'
+    public family = {
+      father: {
+        name: 'daddy'
+      },
+      mother: {
+        name: 'mummy'
+      }
+    }
+    public pets = [
+      {
+        type: 'cat',
+        name: 'Cathy'
+      }
+    ]
 
-//     public skills: string[] = ['eat', 'sleep']
+    public skills: string[] = ['eat', 'sleep']
 
-//     public addSkills(newSkill: string) {
-//       this.skills.unshift(newSkill)
-//     }
-//   }
+    public addSkills(newSkill: string) {
+      this.skills.unshift(newSkill)
+    }
+  }
 
-//   const p = new Person()
+  const p = new Person()
 
-//   autorun(() => {
-//     b1(p.skills[0])
-//     // b2(p.name)
-//   })
+  autorun(() => {
+    b1(p.skills[0])
+    b2(p.pets[0].name)
+  })
 
-//   p.addSkills('code1')
-//   // p.name = 'David'
-//   expect(b1.toArray()).toEqual(['eat'])
-//   // expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
-// })
+  autorun(() => {
+    b3(p.name)
+  })
+
+  p.addSkills('code1')
+  p.pets[0].name = 'Jessie'
+  p.name = 'David'
+  expect(b1.toArray()).toEqual(['eat'])
+  expect(b2.toArray()).toEqual(['Cathy'])
+  expect(b3.toArray()).toEqual(['Adam', 'David'])
+})
