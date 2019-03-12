@@ -74,9 +74,12 @@ export default class Computed {
     return !defaultComparer(oldValue, this.valueComputeFn())
   }
 
-  public pureGet() {
-    this.value = this.valueComputeFn()
-    return this.value
+  public isEqual() {
+    return this.equals(this.value, this.valueComputeFn())
+  }
+
+  public pureGetFreshValue() {
+    return this.valueComputeFn()
   }
 
   public get() {

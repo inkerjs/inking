@@ -34,7 +34,7 @@ export const globalState = {
             shouldTrigger = true
           } else {
             const computed = atomOrComputed as Computed
-            if (computed.isStale()) {
+            if (computed.isStale() && !computed.isEqual()) {
               shouldTrigger = true
             }
           }
