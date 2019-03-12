@@ -1,6 +1,14 @@
 import Atom from './Atom'
 import { globalState } from './globalState'
-import { autoUpdateComputedValue, getCurrCollectingReactionEffect, SideEffect } from './observer'
+import {
+  autorun,
+  getCurrCollectingReactionEffect,
+  resetCurrCollectingComputedEffect,
+  resetCurrCollectingReactionEffect,
+  setCurrCollectingComputedEffect,
+  setCurrCollectingReactionEffect,
+  SideEffect
+} from './observer'
 import { IDecoratorPropsRestArgs } from './types'
 import { defaultComparer, IEqualsComparer, invariant } from './utils'
 
@@ -39,7 +47,11 @@ export default class Computed {
     this.valueComputeFn = initFn
     this.id = globalState.allocateDerivationId()
     const boundRecompute = this.reComputeAndTrigger.bind(this)
-    autoUpdateComputedValue(boundRecompute, 'computed')
+    const sideEffect = new SideEffect(boundRecompute)
+    sideEffect.type = 'computed'
+    setCurrCollectingReactionEffect(sideEffect)
+    sideEffect.sideEffectFn()
+    resetCurrCollectingReactionEffect()
   }
 
   public reComputeAndTrigger() {
@@ -54,6 +66,10 @@ export default class Computed {
   }
 
   public get() {
+    // if (globalState.isRunningReactions) {
+    //   return this.value
+    // }
+
     this.addReaction(getCurrCollectingReactionEffect())
     // this.value = this.valueComputeFn()
     return this.value
@@ -93,7 +109,7 @@ export const createComputed = (getFn: Function, options?: IComputedValueOptions<
 }
 
 function createComputedDecorator(props: IDecoratorPropsRestArgs) {
-  let pickedProps: string[] = props as string[]
+  // let pickedProps: string[] = props as string[]
 
   return function decorateClassObservable(TargetClass: any) {
     // function wrap(...args: any[]) {

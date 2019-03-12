@@ -118,7 +118,7 @@ test('@observable', () => {
 
     public skills: string[] = ['eat', 'sleep']
 
-    public addSkills(newSkill: string) {
+    public addSkillsToStart(newSkill: string) {
       this.skills.unshift(newSkill)
     }
   }
@@ -130,10 +130,10 @@ test('@observable', () => {
     b2(p.name)
   })
 
-  p.addSkills('code1')
-  p.name = 'David'
-  expect(b1.toArray()).toEqual(['eat', 'code1', 'code1'])
-  expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
+  p.addSkillsToStart('code1')
+  // p.name = 'David'
+  expect(b1.toArray()).toEqual(['eat', 'code1'])
+  expect(b2.toArray()).toEqual(['Adam', 'Adam'])
 })
 
 test('@observable with arguments', () => {

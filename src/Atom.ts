@@ -1,7 +1,6 @@
-import { computed } from './computed'
+import Computed, { computed, createComputed } from './computed'
 import { globalState } from './globalState'
 import {
-  getCurrCollectingComputedEffect,
   getCurrCollectingReactionEffect,
   resetCurrCollectingReactionEffect,
   setCurrCollectingReactionEffect,
@@ -42,9 +41,12 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       const des = Reflect.getOwnPropertyDescriptor(proto, prop)
       if (des && des.get) {
         const getterFn = des.get.bind(atom.proxy)
-        const newComputed = computed(getterFn)
-        atom.addProxiedProp(prop, newComputed)
-        return newComputed.get()
+        const newComputed = new Computed(getterFn)
+        atom.addProxiedProp(prop, newComputed as any)
+        globalState.accessIntoCom()
+        const computedResult = newComputed.get()
+        globalState.leaveCom()
+        return computedResult
       }
 
       if (prop === $getOriginSource) {
@@ -56,14 +58,14 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
         // register effect
         // === for reaction ===
         const currReactionSideEffect = getCurrCollectingReactionEffect()
-        if (currReactionSideEffect) {
+        if (currReactionSideEffect && globalState.computedAccessDepth === 0) {
           atom.addReaction(prop as any, currReactionSideEffect)
         }
         // === for computed ===
-        const currComputedSideEffect = getCurrCollectingComputedEffect()
-        if (currComputedSideEffect) {
-          atom.addReaction(prop as any, currComputedSideEffect)
-        }
+        // const currComputedSideEffect = getCurrCollectingComputedEffect()
+        // if (currComputedSideEffect && globalState.computedAccessDepth === 0) {
+        //   atom.addReaction(prop as any, currComputedSideEffect)
+        // }
         return value
       }
       // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
@@ -208,7 +210,8 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
-        sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+        globalState.simpleThunk.add(sideEffect)
+        // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
       }
     })
   }

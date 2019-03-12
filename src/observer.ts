@@ -100,12 +100,9 @@ export class SideEffect implements IEffect {
   }
 }
 
+// === reaction ===
 export const getCurrCollectingReactionEffect = () => {
   return currentCollectingReactionEffect
-}
-
-export const getCurrCollectingComputedEffect = () => {
-  return currentCollectingComputedEffect
 }
 
 export const setCurrCollectingReactionEffect = (effect: SideEffect) => {
@@ -115,6 +112,12 @@ export const setCurrCollectingReactionEffect = (effect: SideEffect) => {
 export const resetCurrCollectingReactionEffect = () => {
   currentCollectingReactionEffect = null
 }
+// === reaction ===
+
+// === computed ===
+export const getCurrCollectingComputedEffect = () => {
+  return currentCollectingComputedEffect
+}
 
 export const setCurrCollectingComputedEffect = (effect: SideEffect) => {
   currentCollectingComputedEffect = effect
@@ -123,20 +126,26 @@ export const setCurrCollectingComputedEffect = (effect: SideEffect) => {
 export const resetCurrCollectingComputedEffect = () => {
   currentCollectingComputedEffect = null
 }
+// === computed ===
 
 export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // collect dependency
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+  setCurrCollectingReactionEffect(sideEffect)
+  sideEffect.runInTrack(sideEffect.sideEffectFn)
+  // globalState.simpleThunk.add(sideEffect)
+  resetCurrCollectingReactionEffect()
+
+  // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
 }
 
-export const autoUpdateComputedValue = (fn: any, type: SideEffectType = 'reaction') => {
-  // collect dependency
-  const sideEffect = new SideEffect(fn)
-  sideEffect.type = type
-  setCurrCollectingComputedEffect(sideEffect)
-  sideEffect.sideEffectFn()
-  resetCurrCollectingComputedEffect()
-}
+// export const autoUpdateComputedValue = (fn: any, type: SideEffectType = 'reaction') => {
+//   // collect dependency
+//   const sideEffect = new SideEffect(fn)
+//   sideEffect.type = type
+//   setCurrCollectingComputedEffect(sideEffect)
+//   sideEffect.sideEffectFn()
+//   resetCurrCollectingComputedEffect()
+// }

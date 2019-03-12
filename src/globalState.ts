@@ -6,13 +6,29 @@ let _reactionId = 0
 let _setDeep = 0
 
 export const globalState = {
+  isRunningReactions: false,
+  computedAccessDepth: 0,
+  accessIntoCom() {
+    globalState.computedAccessDepth++
+  },
+  leaveCom() {
+    globalState.computedAccessDepth--
+  },
   enterSet() {
     _setDeep++
   },
   exitSet() {
     _setDeep--
     if (_setDeep === 0) {
-      console.log('set deep === 0')
+      // console.log('⬆️️️️️️️⬆️⬆️')
+      _setDeep = -1
+      globalState.isRunningReactions = true
+      globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
+        sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+      })
+      globalState.simpleThunk.clear()
+      globalState.isRunningReactions = false
+      _setDeep = 0
     }
   },
   /**
@@ -49,7 +65,7 @@ export const globalState = {
    */
   pendingReactions: new Set<SideEffect>(),
   /**
-   * 
+   *
    */
-  simpleThunk: []
+  simpleThunk: new Set()
 }
