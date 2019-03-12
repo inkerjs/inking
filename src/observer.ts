@@ -70,35 +70,44 @@ export class SideEffect implements IEffect {
    * for `computed`, the dependencies who dependent on this effect
    */
   public dependencies: any[] = []
+  public isInTracking = false
   public constructor(fn: Function) {
     this.sideEffectFn = fn
   }
   public predictFn = () => true
 
   public startTrack = () => {
+    this.isInTracking = true
     setCurrCollectingReactionEffect(this)
   }
 
   public endTrack = () => {
+    this.isInTracking = false
     resetCurrCollectingReactionEffect()
   }
   public runInTrack = (collectFn: Function) => {
     this.startTrack()
-    collectFn()
+    const hasAheadStoppedTracking = collectFn()
+    if (hasAheadStoppedTracking === true) return
     this.endTrack()
   }
 
-  public runEffectWithPredict = () => {
+  public runEffectWithPredict = (): boolean => {
+    let hasAheadStoppedTracking = false
     if (this.predictFn()) {
       // pass arguments
       // TODO: should pass arguments no matter what effect type is?
       let collectorRes = null
       if (typeof this.dependenciesCollector === 'function') {
         collectorRes = this.dependenciesCollector()
+        if (this.isInTracking) {
+          hasAheadStoppedTracking = true
+          this.endTrack()
+        }
       }
-
       this.sideEffectFn(collectorRes)
     }
+    return hasAheadStoppedTracking
   }
 }
 
@@ -147,19 +156,5 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  // setCurrCollectingReactionEffect(sideEffect)
   sideEffect.runInTrack(sideEffect.sideEffectFn)
-  // globalState.simpleThunk.add(sideEffect)
-  // resetCurrCollectingReactionEffect()
-
-  // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
 }
-
-// export const autoUpdateComputedValue = (fn: any, type: SideEffectType = 'reaction') => {
-//   // collect dependency
-//   const sideEffect = new SideEffect(fn)
-//   sideEffect.type = type
-//   setCurrCollectingComputedEffect(sideEffect)
-//   sideEffect.sideEffectFn()
-//   resetCurrCollectingComputedEffect()
-// }

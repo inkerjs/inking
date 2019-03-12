@@ -217,7 +217,6 @@ class Atom {
         } else {
           globalState.simpleThunk.add(sideEffect)
         }
-        // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
       }
     })
   }
