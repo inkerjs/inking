@@ -8,8 +8,8 @@
             <a href="https://www.npmjs.com/package/tinar">
               <img src="https://img.shields.io/npm/v/tinar.svg?color=%2361AFEF" alt="NPM Version">
             </a>
-            <a href="https://travis-ci.org/dobjs/dob">
-              <img src="https://img.shields.io/circleci/project/github/fi3ework/tinar/master.svg?style=flat" alt="Build Status">
+            <a href="https://circleci.com/gh/tinarjs/tinar">
+              <img src="https://img.shields.io/circleci/project/github/tinarjs/tinar/master.svg" alt="Build Status">
             </a>
 <a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
         </i>
@@ -24,7 +24,7 @@ $ yarn add tinar
 
 ## Motivation
 
-[Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) is an awesome feature feature of ES2015. With it, we can do meta-programming and more easy to hijack object's native operations. Tinar is a state manage library based on it and inspired by awesome [MobX](https://github.com/mobxjs/mobx).
+[Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) is an awesome feature feature of ES2015. Base on it, we can do meta-programming and hijack object's native operations easier and more seamless. Tinar is a state manage library based on Proxy and inspired by awesome [MobX](https://github.com/mobxjs/mobx).
 
 ### Road of map
 

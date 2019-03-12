@@ -50,7 +50,8 @@ export default class Computed {
   }
 
   public get() {
-    this.addReaction(getCurrCollectingReactionEffect())
+    // this.addReaction(getCurrCollectingReactionEffect())
+    this.value = this.valueComputeFn()
     return this.value
   }
 

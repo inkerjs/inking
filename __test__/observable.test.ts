@@ -183,3 +183,19 @@ test('@observable with arguments', () => {
   expect(b2.toArray()).toEqual(['Cathy'])
   expect(b3.toArray()).toEqual(['Adam', 'David'])
 })
+
+test('tracking of new property', () => {
+  @observable
+  class Obj {
+    public arr: any[] = [1, 2, 3]
+  }
+
+  const p = new Obj()
+
+  p.arr.push(4)
+  expect(toJS(p.arr)).toEqual([1, 2, 3, 4])
+  p.arr[2] = 'new 3'
+  expect(toJS(p.arr)).toEqual([1, 2, 'new 3', 4])
+  p.arr[3] = 'new 4'
+  expect(toJS(p.arr)).toEqual([1, 2, 'new 3', 'new 4'])
+})

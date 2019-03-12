@@ -1,6 +1,12 @@
 import { computed } from './computed'
 import { globalState } from './globalState'
-import { getCurrCollectingComputedEffect, getCurrCollectingReactionEffect, SideEffect } from './observer'
+import {
+  getCurrCollectingComputedEffect,
+  getCurrCollectingReactionEffect,
+  resetCurrCollectingReactionEffect,
+  setCurrCollectingReactionEffect,
+  SideEffect
+} from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
 import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
@@ -194,7 +200,9 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
+        setCurrCollectingReactionEffect(sideEffect)
         sideEffect.runEffectWithPredict()
+        resetCurrCollectingReactionEffect()
       }
     })
   }
