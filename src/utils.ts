@@ -57,3 +57,18 @@ export function makeFnInTransaction(fn: Function) {
     }
   })
 }
+
+export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function) {
+  return new Proxy(targetFn, {
+    apply(target, ctx, args) {
+      // AOP: before
+      beforeFn()
+      try {
+        return Reflect.apply(target, ctx, args)
+      } finally {
+        // AOP: after
+        afterFn()
+      }
+    }
+  })
+}

@@ -1,7 +1,8 @@
 import Atom from './Atom'
 import Computed from './computed'
+import { globalState } from './globalState'
 import { $atomOfProxy, $getOriginSource, $isProxied } from './types'
-import { isPrimitive } from './utils'
+import { aopFn, isPrimitive } from './utils'
 
 const createTraps = (): ProxyHandler<Atom> => {
   return {
@@ -43,7 +44,7 @@ const createTraps = (): ProxyHandler<Atom> => {
 
       // method: recursive end
       if (typeof value === 'function') {
-        return value
+        return aopFn(value, globalState.enterSet, globalState.exitSet)
       }
 
       // recursive proxy
@@ -54,7 +55,9 @@ const createTraps = (): ProxyHandler<Atom> => {
       return childProxy
     },
     set(atom, prop, value, receiver) {
+      globalState.enterSet()
       atom.set(prop, value)
+      globalState.exitSet()
       return true
     },
     ownKeys(atom) {

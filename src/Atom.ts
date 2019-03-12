@@ -8,7 +8,7 @@ import {
   SideEffect
 } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
-import { defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
+import { aopFn, defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
 
 export function isProxied(thing: any) {
   return !!thing[$isProxied]
@@ -74,7 +74,8 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
           mayBoundFn = value.bind(receiver)
         }
 
-        return makeFnInTransaction(mayBoundFn)
+        // return makeFnInTransaction(mayBoundFn)
+        return mayBoundFn
       }
 
       // return a plain object to recursive make Atom
@@ -100,7 +101,9 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       // null means the change is intercepted
       if (resultOfInterceptor === null) return true
       // or normal change
+      globalState.enterSet()
       Reflect.set(target, prop, resultOfInterceptor.newValue, receiver)
+      globalState.exitSet()
       reportChanged(prop)
       return true
     }

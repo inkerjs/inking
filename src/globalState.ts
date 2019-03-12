@@ -3,8 +3,18 @@ import { SideEffect } from './observer'
 let _atomId = 0
 let _derivationId = 0
 let _reactionId = 0
+let _setDeep = 0
 
 export const globalState = {
+  enterSet() {
+    _setDeep++
+  },
+  exitSet() {
+    _setDeep--
+    if (_setDeep === 0) {
+      console.log('set deep === 0')
+    }
+  },
   /**
    * id of atom, it's unique
    */
@@ -37,5 +47,9 @@ export const globalState = {
   /**
    * pending reactions
    */
-  pendingReactions: new Set<SideEffect>()
+  pendingReactions: new Set<SideEffect>(),
+  /**
+   * 
+   */
+  simpleThunk: []
 }
