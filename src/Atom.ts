@@ -43,9 +43,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
         const getterFn = des.get.bind(atom.proxy)
         const newComputed = new Computed(getterFn)
         atom.addProxiedProp(prop, newComputed as any)
-        globalState.accessIntoCom()
         const computedResult = newComputed.get()
-        globalState.leaveCom()
         return computedResult
       }
 
@@ -192,6 +190,10 @@ class Atom {
     if (this.sideEffects[prop].indexOf(sideEffect) <= 0) {
       this.sideEffects[prop].push(sideEffect)
     }
+
+    if (sideEffect.dependencies.indexOf(this) < 0) {
+      sideEffect.dependencies.push(this)
+    }
   }
 
   public removeReaction = (prop: string | number, effect: SideEffect) => {
@@ -210,7 +212,11 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
-        globalState.simpleThunk.add(sideEffect)
+        if (sideEffect.type === 'computed') {
+          sideEffect.runEffectWithPredict()
+        } else {
+          globalState.simpleThunk.add(sideEffect)
+        }
         // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
       }
     })

@@ -1,7 +1,9 @@
 import Atom from './Atom'
+import Computed from './computed'
 import { globalState } from './globalState'
+import { defaultComparer } from './utils'
 
-let currentCollectingReactionEffect: SideEffect | null = null
+let currentCollectingReactionEffect: SideEffect[] | null = null
 let currentCollectingComputedEffect: SideEffect | null = null
 type SideEffectType = `computed` | `reaction`
 
@@ -67,7 +69,7 @@ export class SideEffect implements IEffect {
   /**
    * for `computed`, the dependencies who dependent on this effect
    */
-  public dependencies = []
+  public dependencies: any[] = []
   public constructor(fn: Function) {
     this.sideEffectFn = fn
   }
@@ -102,15 +104,27 @@ export class SideEffect implements IEffect {
 
 // === reaction ===
 export const getCurrCollectingReactionEffect = () => {
-  return currentCollectingReactionEffect
+  if (currentCollectingReactionEffect) {
+    return currentCollectingReactionEffect[0]
+  }
+  return currentCollectingComputedEffect
 }
 
 export const setCurrCollectingReactionEffect = (effect: SideEffect) => {
-  currentCollectingReactionEffect = effect
+  if (currentCollectingReactionEffect === null) {
+    currentCollectingReactionEffect = [effect]
+  } else {
+    currentCollectingReactionEffect.unshift(effect)
+  }
 }
 
 export const resetCurrCollectingReactionEffect = () => {
-  currentCollectingReactionEffect = null
+  if (Array.isArray(currentCollectingReactionEffect)) {
+    currentCollectingReactionEffect.shift()
+    if (currentCollectingReactionEffect.length === 0) {
+      currentCollectingReactionEffect = null
+    }
+  }
 }
 // === reaction ===
 
@@ -133,10 +147,10 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  setCurrCollectingReactionEffect(sideEffect)
+  // setCurrCollectingReactionEffect(sideEffect)
   sideEffect.runInTrack(sideEffect.sideEffectFn)
   // globalState.simpleThunk.add(sideEffect)
-  resetCurrCollectingReactionEffect()
+  // resetCurrCollectingReactionEffect()
 
   // sideEffect.runInTrack(sideEffect.runEffectWithPredict)
 }

@@ -49,29 +49,51 @@ export default class Computed {
     const boundRecompute = this.reComputeAndTrigger.bind(this)
     const sideEffect = new SideEffect(boundRecompute)
     sideEffect.type = 'computed'
-    setCurrCollectingReactionEffect(sideEffect)
-    sideEffect.sideEffectFn()
-    resetCurrCollectingReactionEffect()
+    // setCurrCollectingReactionEffect(sideEffect)
+    sideEffect.runInTrack(this.valueComputeFn)
+    // resetCurrCollectingReactionEffect()
   }
 
   public reComputeAndTrigger() {
-    const oldValue = this.value
-    this.value = this.valueComputeFn()
+    // const oldValue = this.value
+    // this.value = this.valueComputeFn()
     // if computed is not being observed, DO NOT trigger following side effects
-    if (!this.equals(oldValue, this.value)) {
-      this.sideEffects.forEach(sideEffect => {
-        sideEffect.runEffectWithPredict()
-      })
-    }
+    // if (!this.equals(oldValue, this.value)) {
+    this.sideEffects.forEach(sideEffect => {
+      globalState.simpleThunk.add(sideEffect)
+      // sideEffect.runEffectWithPredict()
+    })
+    // }
+  }
+
+  public isStale() {
+    const oldValue = this.value
+    return !defaultComparer(oldValue, this.valueComputeFn())
+  }
+
+  public pureGet() {
+    this.value = this.valueComputeFn()
+    return this.value
   }
 
   public get() {
     // if (globalState.isRunningReactions) {
     //   return this.value
     // }
+    const oldValue = this.value
+    // could intercept version id check here
+    globalState.accessIntoCom()
+    const currReaction = getCurrCollectingReactionEffect()
+    if (currReaction) {
+      this.addReaction(currReaction)
+      if (currReaction.dependencies.indexOf(this) < 0) {
+        currReaction.dependencies.push(this)
+      }
+    }
 
-    this.addReaction(getCurrCollectingReactionEffect())
     // this.value = this.valueComputeFn()
+    this.value = this.valueComputeFn()
+    globalState.leaveCom()
     return this.value
   }
 

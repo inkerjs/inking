@@ -1,3 +1,5 @@
+import Atom from './Atom'
+import Computed from './computed'
 import { SideEffect } from './observer'
 
 let _atomId = 0
@@ -9,6 +11,7 @@ export const globalState = {
   isRunningReactions: false,
   computedAccessDepth: 0,
   accessIntoCom() {
+    /* tslint:disable:no-invalid-this */
     globalState.computedAccessDepth++
   },
   leaveCom() {
@@ -21,10 +24,25 @@ export const globalState = {
     _setDeep--
     if (_setDeep === 0) {
       // console.log('⬆️️️️️️️⬆️⬆️')
+      console.log(globalState.simpleThunk)
       _setDeep = -1
       globalState.isRunningReactions = true
       globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
-        sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+        const currSideEffectDependencies = sideEffect.dependencies
+        let shouldTrigger = false
+        currSideEffectDependencies.forEach(atomOrComputed => {
+          if (atomOrComputed instanceof Atom) {
+            shouldTrigger = true
+          } else {
+            const computed = atomOrComputed as Computed
+            if (computed.isStale()) {
+              shouldTrigger = true
+            }
+          }
+        })
+        if (shouldTrigger) {
+          sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+        }
       })
       globalState.simpleThunk.clear()
       globalState.isRunningReactions = false
