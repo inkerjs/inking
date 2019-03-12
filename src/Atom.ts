@@ -37,7 +37,6 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
-
       // intercept getter
       const proto = Reflect.getPrototypeOf(target)
       const des = Reflect.getOwnPropertyDescriptor(proto, prop)
@@ -55,11 +54,13 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       if (isPrimitive(value)) {
         // dependency collection timing
         // register effect
+        // === for reaction ===
         const currReactionSideEffect = getCurrCollectingReactionEffect()
-        const currComputedSideEffect = getCurrCollectingComputedEffect()
         if (currReactionSideEffect) {
           atom.addReaction(prop as any, currReactionSideEffect)
         }
+        // === for computed ===
+        const currComputedSideEffect = getCurrCollectingComputedEffect()
         if (currComputedSideEffect) {
           atom.addReaction(prop as any, currComputedSideEffect)
         }
@@ -115,6 +116,7 @@ interface ISideEffects {
 export type AtomType = `object` | `array`
 // TODO: add generic <T> ?
 class Atom {
+  public id: string
   /**
    * original input plain object
    */
@@ -135,6 +137,7 @@ class Atom {
 
   public constructor(value: any) {
     this.value = value
+    this.id = globalState.allocateAtomId()
     switch (true) {
       case Array.isArray(value):
         this.atomType = `array`

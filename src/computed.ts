@@ -1,10 +1,15 @@
 import Atom from './Atom'
+import { globalState } from './globalState'
 import { autoUpdateComputedValue, getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { IDecoratorPropsRestArgs } from './types'
 import { defaultComparer, IEqualsComparer, invariant } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
 export default class Computed {
+  /**
+   * id
+   */
+  public id: string
   /**
    * real value of Computed
    */
@@ -32,6 +37,7 @@ export default class Computed {
 
   public constructor(initFn: Function) {
     this.valueComputeFn = initFn
+    this.id = globalState.allocateDerivationId()
     const boundRecompute = this.reComputeAndTrigger.bind(this)
     autoUpdateComputedValue(boundRecompute, 'computed')
   }
@@ -39,9 +45,7 @@ export default class Computed {
   public reComputeAndTrigger() {
     const oldValue = this.value
     this.value = this.valueComputeFn()
-
     // if computed is not being observed, DO NOT trigger following side effects
-    if (this.sideEffects.length === 0) return
     if (!this.equals(oldValue, this.value)) {
       this.sideEffects.forEach(sideEffect => {
         sideEffect.runEffectWithPredict()

@@ -51,7 +51,7 @@ person.firstName = 'Beckham2'
 person.firstName = 'BECKHAM2'
 ```
 
-Ideally, the result should be: 
+Ideally, the result should be:
 
 ```js
 $ DAVID_BECKHAM
@@ -78,11 +78,11 @@ MobX will output right result. But Tinar and some other lightweight observable d
 ### Reacting to observables
 
 - [x] computed
-- [ ] @computed
+- [x] @computed
 - [x] autorun
 - [x] when
 - [x] reaction
-- [ ] @observer
+- [x] @observer
 
 ### Changing observables
 

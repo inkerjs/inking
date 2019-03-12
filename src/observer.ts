@@ -53,6 +53,7 @@ export function runPendingReactions() {
 }
 
 export class SideEffect implements IEffect {
+  public id: string = globalState.allocateReactionId()
   public type!: SideEffectType // TODO: assign it in constructor
   /**
    * for `reaction`, `when`, this is the first function argument
