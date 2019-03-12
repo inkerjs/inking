@@ -42,12 +42,14 @@ export default class Computed {
    * comparer function, computed only will trigger its side effects when comparer return true
    */
   public equals: IEqualsComparer<any> = defaultComparer
+  public innerSideEffect: SideEffect
 
   public constructor(initFn: Function) {
     this.valueComputeFn = initFn
     this.id = globalState.allocateDerivationId()
     const boundRecompute = this.reComputeAndTrigger.bind(this)
     const sideEffect = new SideEffect(boundRecompute)
+    this.innerSideEffect = sideEffect
     sideEffect.type = 'computed'
     // setCurrCollectingReactionEffect(sideEffect)
     sideEffect.runInTrack(this.valueComputeFn)
@@ -57,6 +59,7 @@ export default class Computed {
   public reComputeAndTrigger() {
     // const oldValue = this.value
     // this.value = this.valueComputeFn()
+    this.innerSideEffect.runInTrack(this.valueComputeFn)
     // if computed is not being observed, DO NOT trigger following side effects
     // if (!this.equals(oldValue, this.value)) {
     this.sideEffects.forEach(sideEffect => {
@@ -92,6 +95,9 @@ export default class Computed {
     }
 
     // this.value = this.valueComputeFn()
+    if (currReaction) {
+      currReaction.runInTrack(this.valueComputeFn)
+    }
     this.value = this.valueComputeFn()
     globalState.leaveCom()
     return this.value

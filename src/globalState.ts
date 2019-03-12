@@ -24,7 +24,6 @@ export const globalState = {
     _setDeep--
     if (_setDeep === 0) {
       // console.log('⬆️️️️️️️⬆️⬆️')
-      console.log(globalState.simpleThunk)
       _setDeep = -1
       globalState.isRunningReactions = true
       globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
