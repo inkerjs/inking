@@ -72,6 +72,19 @@ export class SideEffect implements IEffect {
   }
   public predictFn = () => true
 
+  public startTrack = () => {
+    setCurrCollectingReactionEffect(this)
+  }
+
+  public endTrack = () => {
+    resetCurrCollectingReactionEffect()
+  }
+  public runInTrack = (collectFn: Function) => {
+    this.startTrack()
+    collectFn()
+    this.endTrack()
+  }
+
   public runEffectWithPredict = () => {
     if (this.predictFn()) {
       // pass arguments
@@ -115,9 +128,7 @@ export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // TODO: if multi run, use promise to delay or give every reaction a id?
   const sideEffect = new SideEffect(fn)
   sideEffect.type = type
-  setCurrCollectingReactionEffect(sideEffect)
-  sideEffect.sideEffectFn()
-  resetCurrCollectingReactionEffect()
+  sideEffect.runInTrack(sideEffect.runEffectWithPredict)
 }
 
 export const autoUpdateComputedValue = (fn: any, type: SideEffectType = 'reaction') => {

@@ -170,8 +170,8 @@ class Atom {
     return Object.keys(this.proxiedProps).indexOf(prop.toString()) >= 0
   }
 
-  public addReaction = (prop: string | number, handler: SideEffect | null) => {
-    if (handler === null) return
+  public addReaction = (prop: string | number, sideEffect: SideEffect | null) => {
+    if (sideEffect === null) return
 
     if (Object.keys(this.proxiedProps).length === 0) {
       this.isBeingTracked = true
@@ -181,7 +181,9 @@ class Atom {
       this.sideEffects[prop] = []
     }
 
-    this.sideEffects[prop].push(handler)
+    if (this.sideEffects[prop].indexOf(sideEffect) <= 0) {
+      this.sideEffects[prop].push(sideEffect)
+    }
   }
 
   public removeReaction = (prop: string | number, effect: SideEffect) => {
@@ -200,9 +202,7 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
-        setCurrCollectingReactionEffect(sideEffect)
-        sideEffect.runEffectWithPredict()
-        resetCurrCollectingReactionEffect()
+        sideEffect.runInTrack(sideEffect.runEffectWithPredict)
       }
     })
   }
