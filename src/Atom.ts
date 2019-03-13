@@ -59,8 +59,8 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
 
       if (typeof value === 'function') {
         let mayBoundFn = value
+        // FIXME: why could not bind user-land method to receiver
         if (isNativeMethod(prop, target[prop])) {
-          // FIXME: why could not bind user-land method to receiver
           mayBoundFn = value.bind(receiver)
         }
 

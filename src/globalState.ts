@@ -48,6 +48,7 @@ export const globalState = {
       // console.log('⬆️️️️️️️⬆️⬆️')
       _setDeep = -1 // HACK:
       globalState.isRunningReactions = true
+      const computedNeedToUpdate: Computed[] = []
       globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
         const currSideEffectDependencies = sideEffect.dependencies
         let shouldTrigger = false
@@ -61,6 +62,7 @@ export const globalState = {
 
           if (dependency instanceof Computed) {
             if (dependency.isStale() && !dependency.isEqual()) {
+              computedNeedToUpdate.push(dependency)
               shouldTrigger = true
             }
           }
@@ -70,6 +72,7 @@ export const globalState = {
         }
       })
       // everything is done, gonna ending this updating
+      computedNeedToUpdate.forEach(com => com.refreshValue())
       globalState.simpleThunk.clear()
       globalState.isRunningReactions = false
       _setDeep = 0

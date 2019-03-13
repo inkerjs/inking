@@ -77,6 +77,11 @@ export default class Computed {
     return this.valueComputeFn()
   }
 
+  public refreshValue() {
+    return (this.value = this.pureGetFreshValue())
+  }
+
+  // get() will refresh the computed value
   public get() {
     globalState.intoCom()
     const currReaction = getCurrCollectingReactionEffect()

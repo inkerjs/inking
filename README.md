@@ -1,7 +1,7 @@
 <p align="center">
     <h1 align="center">Tinar</h1>
     <p align="center">
-        Lightweight MobX like date management library based on <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
+        Lightweight MobX like date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
     <p>
     <p align="center">
         <i>

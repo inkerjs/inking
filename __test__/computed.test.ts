@@ -88,7 +88,7 @@ test('equals', () => {
   expect(b.toArray()).toEqual(['eat_sleep', 'code_eAt_sleep'])
 })
 
-// test('@computed', () => {
+// test('computed with action', () => {
 //   const b1 = buffer()
 //   const b2 = buffer()
 
@@ -132,19 +132,4 @@ test('equals', () => {
 //   })()
 
 //   expect(b1.toArray()).toEqual([2, 3])
-//   // expect(b2.toArray()).toEqual(['Adam', 'Adam', 'David'])
-// })
-
-// TODO: add `spy` for debug?
-// test('lazy recompute', () => {
-//   const obj = observable(getPlainObj())
-//   const b = buffer()
-
-//   const c1 = createComputed(() => {
-//     return obj.skills.join('_')
-//   })
-
-//   autorun(() => {
-//     b(c1.get())
-//   })
 // })
