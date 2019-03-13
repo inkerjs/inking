@@ -1,4 +1,4 @@
-import { resetCurrCollectingReactionEffect, setCurrCollectingReactionEffect, SideEffect } from './observer'
+import { resetCurrCollectingReactionEffect, unshiftCurrCollectingReactionEffect, SideEffect } from './observer'
 
 type predicateType = (...args: any[]) => any
 type effectFn = (data: any) => any
@@ -8,7 +8,7 @@ export const reaction = (collector: predicateType, fn: effectFn) => {
   sideEffect.dependenciesCollector = collector
   // `predicate` function will collect dependencies
   // `fn` is the real callback will be triggered
-  setCurrCollectingReactionEffect(sideEffect)
+  unshiftCurrCollectingReactionEffect(sideEffect)
   collector()
   resetCurrCollectingReactionEffect()
 }

@@ -1,13 +1,8 @@
-import Computed, { computed, createComputed } from './computed'
+import Computed from './computed'
 import { globalState } from './globalState'
-import {
-  getCurrCollectingReactionEffect,
-  resetCurrCollectingReactionEffect,
-  setCurrCollectingReactionEffect,
-  SideEffect
-} from './observer'
+import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
-import { aopFn, defaultComparer, isNativeMethod, isPrimitive, makeFnInTransaction } from './utils'
+import { defaultComparer, isNativeMethod, isPrimitive } from './utils'
 
 export function isProxied(thing: any) {
   return !!thing[$isProxied]
@@ -36,7 +31,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
-      // intercept getter
+      // for get(){return ...}
       const proto = Reflect.getPrototypeOf(target)
       const des = Reflect.getOwnPropertyDescriptor(proto, prop)
       if (des && des.get) {
@@ -53,28 +48,22 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
 
       if (isPrimitive(value)) {
         // dependency collection timing
-        // register effect
-        // === for reaction ===
         const currReactionSideEffect = getCurrCollectingReactionEffect()
+        // NOTE: when collecting dependencies, the effect actually just dependent on computed value, so if it's collecting in accessing computed value, observable value should not be dependent
+
         if (currReactionSideEffect && globalState.computedAccessDepth === 0) {
           atom.addReaction(prop as any, currReactionSideEffect)
         }
-        // === for computed ===
-        // const currComputedSideEffect = getCurrCollectingComputedEffect()
-        // if (currComputedSideEffect && globalState.computedAccessDepth === 0) {
-        //   atom.addReaction(prop as any, currComputedSideEffect)
-        // }
         return value
       }
-      // a method should be treat as a transaction, so use Proxy to make AOP transaction hook
+
       if (typeof value === 'function') {
         let mayBoundFn = value
         if (isNativeMethod(prop, target[prop])) {
-          // native method will directly modify source, so bind it to source
+          // FIXME: why could not bind user-land method to receiver
           mayBoundFn = value.bind(receiver)
         }
 
-        // return makeFnInTransaction(mayBoundFn)
         return mayBoundFn
       }
 
@@ -126,7 +115,7 @@ class Atom {
   public value: any
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
   public source!: object
-  public isBeingTracked = false
+  // public isBeingTracked = false
   public proxiedProps = {}
   public sideEffects: ISideEffects = {}
   public atomType!: AtomType
@@ -179,20 +168,15 @@ class Atom {
   public addReaction = (prop: string | number, sideEffect: SideEffect | null) => {
     if (sideEffect === null) return
 
-    if (Object.keys(this.proxiedProps).length === 0) {
-      this.isBeingTracked = true
-    }
-
-    if (!Array.isArray(this.sideEffects[prop])) {
-      this.sideEffects[prop] = []
-    }
-
-    if (this.sideEffects[prop].indexOf(sideEffect) <= 0) {
-      this.sideEffects[prop].push(sideEffect)
-    }
-
+    // add atom to side effect's dependencies
     if (sideEffect.dependencies.indexOf(this) < 0) {
       sideEffect.dependencies.push(this)
+    }
+
+    // add side effect to atom's prop dependencies
+    this.sideEffects[prop] = this.sideEffects[prop] || []
+    if (this.sideEffects[prop].indexOf(sideEffect) <= 0) {
+      this.sideEffects[prop].push(sideEffect)
     }
   }
 
@@ -212,10 +196,15 @@ class Atom {
       if (globalState.batchDeep > 0) {
         globalState.pendingReactions.add(sideEffect)
       } else {
-        if (sideEffect.type === 'computed') {
-          sideEffect.runEffectWithPredict()
-        } else {
-          globalState.simpleThunk.add(sideEffect)
+        // computed should be directly "unzipped" to release the reactions
+        switch (sideEffect.type) {
+          case 'computed':
+            sideEffect.runEffectWithPredict()
+            break
+          default:
+            // TODO: some reaction do not have a type, `case 'reaction'` bugs
+            globalState.simpleThunk.add(sideEffect)
+            break
         }
       }
     })

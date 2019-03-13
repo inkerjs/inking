@@ -1,10 +1,8 @@
 import Atom from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
-import { defaultComparer } from './utils'
 
 let currentCollectingReactionEffect: SideEffect[] | null = null
-let currentCollectingComputedEffect: SideEffect | null = null
 type SideEffectType = `computed` | `reaction`
 
 export interface IEffect {
@@ -78,18 +76,25 @@ export class SideEffect implements IEffect {
 
   public startTrack = () => {
     this.isInTracking = true
-    setCurrCollectingReactionEffect(this)
+    unshiftCurrCollectingReactionEffect(this)
   }
 
   public endTrack = () => {
     this.isInTracking = false
     resetCurrCollectingReactionEffect()
   }
+
   public runInTrack = (collectFn: Function) => {
     this.startTrack()
     const hasAheadStoppedTracking = collectFn()
     if (hasAheadStoppedTracking === true) return
     this.endTrack()
+  }
+
+  public addDependency = (dependency: Atom | Computed) => {
+    if (this.dependencies.indexOf(dependency) < 0) {
+      this.dependencies.push(dependency)
+    }
   }
 
   public runEffectWithPredict = (): boolean => {
@@ -111,21 +116,14 @@ export class SideEffect implements IEffect {
   }
 }
 
-// === reaction ===
-export const getCurrCollectingReactionEffect = () => {
-  if (currentCollectingReactionEffect) {
-    return currentCollectingReactionEffect[0]
-  }
-  return currentCollectingComputedEffect
-}
+// === reaction accessor ===
+export const getCurrCollectingReactionEffect = () =>
+  currentCollectingReactionEffect === null ? null : currentCollectingReactionEffect[0]
 
-export const setCurrCollectingReactionEffect = (effect: SideEffect) => {
-  if (currentCollectingReactionEffect === null) {
-    currentCollectingReactionEffect = [effect]
-  } else {
-    currentCollectingReactionEffect.unshift(effect)
-  }
-}
+export const unshiftCurrCollectingReactionEffect = (effect: SideEffect) =>
+  currentCollectingReactionEffect === null
+    ? (currentCollectingReactionEffect = [effect])
+    : currentCollectingReactionEffect.unshift(effect)
 
 export const resetCurrCollectingReactionEffect = () => {
   if (Array.isArray(currentCollectingReactionEffect)) {
@@ -135,21 +133,7 @@ export const resetCurrCollectingReactionEffect = () => {
     }
   }
 }
-// === reaction ===
-
-// === computed ===
-export const getCurrCollectingComputedEffect = () => {
-  return currentCollectingComputedEffect
-}
-
-export const setCurrCollectingComputedEffect = (effect: SideEffect) => {
-  currentCollectingComputedEffect = effect
-}
-
-export const resetCurrCollectingComputedEffect = () => {
-  currentCollectingComputedEffect = null
-}
-// === computed ===
+// === reaction accessor ===
 
 export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // collect dependency

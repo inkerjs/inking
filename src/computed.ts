@@ -1,16 +1,8 @@
 import Atom from './Atom'
 import { globalState } from './globalState'
-import {
-  autorun,
-  getCurrCollectingReactionEffect,
-  resetCurrCollectingComputedEffect,
-  resetCurrCollectingReactionEffect,
-  setCurrCollectingComputedEffect,
-  setCurrCollectingReactionEffect,
-  SideEffect
-} from './observer'
+import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { IDecoratorPropsRestArgs } from './types'
-import { defaultComparer, IEqualsComparer, invariant } from './utils'
+import { defaultComparer, IEqualsComparer } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
 export default class Computed {
@@ -42,31 +34,38 @@ export default class Computed {
    * comparer function, computed only will trigger its side effects when comparer return true
    */
   public equals: IEqualsComparer<any> = defaultComparer
-  public innerSideEffect: SideEffect
+  /**
+   * the internal assist SideEffect of each Computed
+   */
+  public internalSideEffect: SideEffect
 
   public constructor(initFn: Function) {
     this.valueComputeFn = initFn
     this.id = globalState.allocateDerivationId()
-    const boundRecompute = this.reComputeAndTrigger.bind(this)
+    const boundRecompute = this.reCollectAndTriggerSideEffects.bind(this)
+    // Each Computed has a SideEffect corresponding to it.
+    // The SideEffect collects on valueComputeFn and it's side effect is run Computed's sideEffect.
     const sideEffect = new SideEffect(boundRecompute)
-    this.innerSideEffect = sideEffect
     sideEffect.type = 'computed'
-    // setCurrCollectingReactionEffect(sideEffect)
-    sideEffect.runInTrack(this.valueComputeFn)
-    // resetCurrCollectingReactionEffect()
+    this.internalSideEffect = sideEffect
+    // collect dependencies
+    this.collect()
   }
 
-  public reComputeAndTrigger() {
-    // const oldValue = this.value
-    // this.value = this.valueComputeFn()
-    this.innerSideEffect.runInTrack(this.valueComputeFn)
-    // if computed is not being observed, DO NOT trigger following side effects
-    // if (!this.equals(oldValue, this.value)) {
+  public collect() {
+    this.internalSideEffect.runInTrack(this.valueComputeFn)
+  }
+
+  public reCollectAndTriggerSideEffects() {
+    // re-collect
+    this.collect()
     this.sideEffects.forEach(sideEffect => {
       globalState.simpleThunk.add(sideEffect)
-      // sideEffect.runEffectWithPredict()
     })
-    // }
+  }
+
+  public isEqual() {
+    return this.equals(this.value, this.valueComputeFn())
   }
 
   public isStale() {
@@ -74,44 +73,29 @@ export default class Computed {
     return !defaultComparer(oldValue, this.valueComputeFn())
   }
 
-  public isEqual() {
-    return this.equals(this.value, this.valueComputeFn())
-  }
-
   public pureGetFreshValue() {
     return this.valueComputeFn()
   }
 
   public get() {
-    // if (globalState.isRunningReactions) {
-    //   return this.value
-    // }
-    const oldValue = this.value
-    // could intercept version id check here
-    globalState.accessIntoCom()
+    globalState.intoCom()
     const currReaction = getCurrCollectingReactionEffect()
+    // 1. add dependency to current reaction.
     if (currReaction) {
       this.addReaction(currReaction)
-      if (currReaction.dependencies.indexOf(this) < 0) {
-        currReaction.dependencies.push(this)
-      }
+      currReaction.addDependency(this)
+      // currReaction.runInTrack(this.valueComputeFn)
     }
 
-    // this.value = this.valueComputeFn()
-    if (currReaction) {
-      currReaction.runInTrack(this.valueComputeFn)
-    }
-    this.value = this.valueComputeFn()
+    // 2. return a fresh value.
+    this.value = this.pureGetFreshValue()
     globalState.leaveCom()
     return this.value
   }
 
-  public addReaction = (handler: SideEffect | null) => {
-    if (handler === null) return
-    if (!Array.isArray(this.sideEffects)) {
-      this.sideEffects = []
-    }
-    this.sideEffects.push(handler)
+  public addReaction = (sideEffect: SideEffect | null) => {
+    if (sideEffect === null) return
+    this.sideEffects.push(sideEffect)
   }
 
   public set() {
@@ -124,9 +108,6 @@ export interface IComputedValueOptions<T> {
   set?: (value: T) => void
   name?: string
   equals?: IEqualsComparer<T>
-  // context?: any
-  // requiresReaction?: boolean
-  // keepAlive?: boolean
 }
 
 export const createComputed = (getFn: Function, options?: IComputedValueOptions<any>) => {

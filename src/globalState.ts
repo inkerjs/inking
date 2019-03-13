@@ -8,67 +8,14 @@ let _reactionId = 0
 let _setDeep = 0
 
 export const globalState = {
+  /**
+   * indication is it in final reaction running
+   */
   isRunningReactions: false,
+  /**
+   * how depth we are accessing in nested computed value
+   */
   computedAccessDepth: 0,
-  accessIntoCom() {
-    /* tslint:disable:no-invalid-this */
-    globalState.computedAccessDepth++
-  },
-  leaveCom() {
-    globalState.computedAccessDepth--
-  },
-  enterSet() {
-    _setDeep++
-  },
-  exitSet() {
-    _setDeep--
-    if (_setDeep === 0) {
-      // console.log('⬆️️️️️️️⬆️⬆️')
-      _setDeep = -1
-      globalState.isRunningReactions = true
-      globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
-        const currSideEffectDependencies = sideEffect.dependencies
-        let shouldTrigger = false
-        currSideEffectDependencies.forEach(atomOrComputed => {
-          if (atomOrComputed instanceof Atom) {
-            shouldTrigger = true
-          } else {
-            const computed = atomOrComputed as Computed
-            if (computed.isStale() && !computed.isEqual()) {
-              shouldTrigger = true
-            }
-          }
-        })
-        if (shouldTrigger) {
-          sideEffect.runInTrack(sideEffect.runEffectWithPredict)
-        }
-      })
-      globalState.simpleThunk.clear()
-      globalState.isRunningReactions = false
-      _setDeep = 0
-    }
-  },
-  /**
-   * id of atom, it's unique
-   */
-  allocateAtomId() {
-    const currAtomId = _atomId
-    _atomId++
-    return `[atom] ${currAtomId}`
-  },
-  /**
-   * id of atom, it's unique
-   */
-  allocateDerivationId() {
-    const currDerivationId = _derivationId
-    _derivationId++
-    return `[derivation] ${currDerivationId}`
-  },
-  allocateReactionId() {
-    const currReactionId = _reactionId
-    _reactionId++
-    return `[reaction] ${currReactionId}`
-  },
   /**
    * is in transaction
    */
@@ -82,7 +29,74 @@ export const globalState = {
    */
   pendingReactions: new Set<SideEffect>(),
   /**
-   *
+   * TODO: relationship with pending reactions?
    */
-  simpleThunk: new Set()
+  simpleThunk: new Set(),
+  intoCom() {
+    /* tslint:disable:no-invalid-this */
+    globalState.computedAccessDepth++
+  },
+  leaveCom() {
+    globalState.computedAccessDepth--
+  },
+  enterSet() {
+    _setDeep++
+  },
+  exitSet() {
+    _setDeep--
+    if (_setDeep === 0) {
+      // console.log('⬆️️️️️️️⬆️⬆️')
+      _setDeep = -1 // HACK:
+      globalState.isRunningReactions = true
+      globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
+        const currSideEffectDependencies = sideEffect.dependencies
+        let shouldTrigger = false
+        for (const dependency of currSideEffectDependencies) {
+          if (dependency instanceof Atom) {
+            shouldTrigger = true
+            // if atom changed, it definitely got a change
+            // do not need to check if should trigger anymore
+            break
+          }
+
+          if (dependency instanceof Computed) {
+            if (dependency.isStale() && !dependency.isEqual()) {
+              shouldTrigger = true
+            }
+          }
+        }
+        if (shouldTrigger) {
+          sideEffect.runInTrack(sideEffect.runEffectWithPredict)
+        }
+      })
+      // everything is done, gonna ending this updating
+      globalState.simpleThunk.clear()
+      globalState.isRunningReactions = false
+      _setDeep = 0
+    }
+  },
+  /**
+   * unique ID of Atom
+   */
+  allocateAtomId() {
+    const currAtomId = _atomId
+    _atomId++
+    return `[atom] ${currAtomId}`
+  },
+  /**
+   * unique ID of Derivation(Computed)
+   */
+  allocateDerivationId() {
+    const currDerivationId = _derivationId
+    _derivationId++
+    return `[derivation] ${currDerivationId}`
+  },
+  /**
+   * unique ID of Reaction
+   */
+  allocateReactionId() {
+    const currReactionId = _reactionId
+    _reactionId++
+    return `[reaction] ${currReactionId}`
+  }
 }
