@@ -1,4 +1,4 @@
-import { endBatch, startBatch } from './observer'
+// import { endBatch, startBatch } from './observer'
 
 export function isPrimitive(value: any) {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
@@ -43,20 +43,20 @@ export function once(func: Function): Function {
   }
 }
 
-export function makeFnInTransaction(fn: Function) {
-  return new Proxy(fn, {
-    apply(target, ctx, args) {
-      // AOP: before
-      startBatch()
-      try {
-        return Reflect.apply(target, ctx, args)
-      } finally {
-        // AOP: after
-        endBatch()
-      }
-    }
-  })
-}
+// export function makeFnInTransaction(fn: Function) {
+//   return new Proxy(fn, {
+//     apply(target, ctx, args) {
+//       // AOP: before
+//       startBatch()
+//       try {
+//         return Reflect.apply(target, ctx, args)
+//       } finally {
+//         // AOP: after
+//         endBatch()
+//       }
+//     }
+//   })
+// }
 
 export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function) {
   return new Proxy(targetFn, {

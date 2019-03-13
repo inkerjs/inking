@@ -193,20 +193,20 @@ class Atom {
 
     this.sideEffects[prop].forEach(sideEffect => {
       // isRunning transaction
-      if (globalState.batchDeep > 0) {
-        globalState.pendingReactions.add(sideEffect)
-      } else {
-        // computed should be directly "unzipped" to release the reactions
-        switch (sideEffect.type) {
-          case 'computed':
-            sideEffect.runEffectWithPredict()
-            break
-          default:
-            // TODO: some reaction do not have a type, `case 'reaction'` bugs
-            globalState.simpleThunk.add(sideEffect)
-            break
-        }
+      // if (globalState.batchDepth > 0) {
+      //   globalState.pendingReactions.add(sideEffect)
+      // } else {
+      // computed should be directly "unzipped" to release the reactions
+      switch (sideEffect.type) {
+        case 'computed':
+          sideEffect.runEffectWithPredict()
+          break
+        default:
+          // TODO: some reaction do not have a type, `case 'reaction'` bugs
+          globalState.simpleThunk.add(sideEffect)
+          break
       }
+      // }
     })
   }
 }

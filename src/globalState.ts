@@ -23,7 +23,7 @@ export const globalState = {
   /**
    * transaction depth
    */
-  batchDeep: 0,
+  // batchDepth: 0,
   /**
    * pending reactions
    */
@@ -31,7 +31,7 @@ export const globalState = {
   /**
    * TODO: relationship with pending reactions?
    */
-  simpleThunk: new Set(),
+  simpleThunk: new Set<SideEffect>(),
   intoCom() {
     /* tslint:disable:no-invalid-this */
     globalState.computedAccessDepth++

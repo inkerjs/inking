@@ -11,23 +11,22 @@ export interface IEffect {
   sideEffectFn: Function
 }
 
-export function startBatch() {
-  if (globalState.batchDeep === 0) {
-    // If starting a new queue from deep 0, clear the original queue.
-    globalState.pendingReactions = new Set()
-  }
+// export function startBatch() {
+//   if (globalState.batchDepth === 0) {
+//     // If starting a new queue from deep 0, clear the original queue.
+//     globalState.pendingReactions = new Set()
+//   }
 
-  globalState.batchDeep++
-  globalState.isPendingTransaction = true
-}
+//   globalState.batchDepth++
+//   globalState.isPendingTransaction = true
+// }
 
-export function endBatch() {
-  if (--globalState.batchDeep === 0) {
-    // runPendingReactions()
-    globalState.isPendingTransaction = false
-    runPendingReactions()
-  }
-}
+// export function endBatch() {
+//   if (--globalState.batchDepth === 0) {
+//     globalState.isPendingTransaction = false
+//     runPendingReactions()
+//   }
+// }
 
 export function runPendingReactions() {
   // The number of queue executions.

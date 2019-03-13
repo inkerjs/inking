@@ -88,48 +88,48 @@ test('equals', () => {
   expect(b.toArray()).toEqual(['eat_sleep', 'code_eAt_sleep'])
 })
 
-// test('computed with action', () => {
-//   const b1 = buffer()
-//   const b2 = buffer()
+test('computed with action', () => {
+  const b1 = buffer()
+  const b2 = buffer()
 
-//   @observable
-//   class Person {
-//     public name = 'Adam'
-//     public family = {
-//       father: {
-//         name: 'daddy'
-//       },
-//       mother: {
-//         name: 'mummy'
-//       }
-//     }
-//     public pets = [
-//       {
-//         type: 'cat',
-//         name: 'Cathy'
-//       }
-//     ]
+  @observable
+  class Person {
+    public name = 'Adam'
+    public family = {
+      father: {
+        name: 'daddy'
+      },
+      mother: {
+        name: 'mummy'
+      }
+    }
+    public pets = [
+      {
+        type: 'cat',
+        name: 'Cathy'
+      }
+    ]
 
-//     public skills: string[] = ['eat', 'sleep']
+    public skills: string[] = ['eat', 'sleep']
 
-//     public get skillsCount() {
-//       return this.skills.length
-//     }
+    public get skillsCount() {
+      return this.skills.length
+    }
 
-//     public addSkills(newSkill: string) {
-//       this.skills.unshift(newSkill)
-//     }
-//   }
+    public addSkills(newSkill: string) {
+      this.skills.unshift(newSkill)
+    }
+  }
 
-//   const p = new Person()
+  const p = new Person()
 
-//   autorun(() => {
-//     b1(p.skillsCount)
-//   })
+  autorun(() => {
+    b1(p.skillsCount)
+  })
 
-//   action(() => {
-//     p.addSkills('code')
-//   })()
+  action(() => {
+    p.addSkills('code')
+  })()
 
-//   expect(b1.toArray()).toEqual([2, 3])
-// })
+  expect(b1.toArray()).toEqual([2, 3])
+})
