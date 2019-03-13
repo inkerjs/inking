@@ -1,7 +1,7 @@
 {
   "name": "tinar",
-  "version": "0.0.2",
-  "description": "🍓Lite version MobX based on Proxy.",
+  "version": "0.0.3",
+  "description": "🍉 Light-weight MobX like date management library",
   "main": "lib/index.js",
   "files": [
     "lib/"
