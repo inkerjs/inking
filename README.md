@@ -26,42 +26,19 @@ $ yarn add tinar
 
 [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) is an awesome feature feature of ES2015. Base on it, we can do meta-programming and hijack object's native operations easier and more seamless. Tinar is a state manage library based on Proxy and inspired by awesome [MobX](https://github.com/mobxjs/mobx).
 
-### Road of map
+## Concept
 
-Althogh some unit tests is provided. Howerver, Tinar is still in prototype phase. It lacks an important feature —— **the update status between reaction nodes**. For example:
+- Just Like MobX, the object Tinar return is not a plain object, but an Observable or Computed object which is hijacked by Proxy. All `get` and `set` operations are hijacked, which makes it possible to collect dependencies on trigger reactions.
+- A very important issue is that the Computed value needs to be triggered when it is actually updated. Many lightweight class MobX libraries don't implement it, which causes repeated reaction triggers. Tinar start a transaction with the call to `set` and the function(AOP by Proxy). The reaction triggered in the transaction will not be invoked immediately, but staged and there will only be one copy in stash. And at the end of the outermost transaction, all the reactions will be triggered.
+- Although some test cases have been added, Tinar is still in a prototype phase and needs `tinar-react` and Devtools.
+- Feel free to leave any message in the issue.
 
-```javascript
-const person = @observable({
-    firstName: 'Beckham',
-	lastName: 'David',
-    get fullname1(){
-        return `${this.lastName}_${firstName}.toUpperCase()`
-    }
-})
+中文：
 
-const auto1 = autorun(()=>{
-    console.log(person.fullname)
-})
-
-const auto2 = autorun(()=>{
-    console.log(`${person.firstName} ${person.fullname}`)
-})
-
-person.firstName = 'Beckham2'
-person.firstName = 'BECKHAM2'
-```
-
-Ideally, the result should be:
-
-```js
-$ DAVID_BECKHAM
-$ Beckham DAVID_BECKHAM
-$ DAVID_BECKHAM2
-$ Beckham2 DAVID_BECKHAM2
-$ BECKHAM2 DAVID_BECKHAM2
-```
-
-MobX will output right result. But Tinar and some other lightweight observable data library like [nx-js]() and [dob]() won't output right beacause of the duplicate trigger of reaction. But the update status between reaction nodes is a bit difficult for the time being. I hope to figure out how exactly MobX solves or figure out a easier way. You are welcomed to leave a issue if you have any idea how to solve or anything else about Tinar.
+- 就像 MobX 一样，Tinar 返回的对象并不是一个 plain object，而是通过 Proxy 代理的一个 Observable 或者 Computed 对象，所有的 get set 操作都会被劫持，这也使得收集依赖于触发反应成为了可能。
+- 有一个很重要的问题就是 Computed 值需要在真正更新时再触发，很多轻量的类 MobX 库没有做到这一点，这会导致重复的反应触发，Tinar 通过对 `set` 与函数调用的开始与结束进行事务操作，在事务中触发的 reaction 会被暂存而不会触发，并且只会有 one copy，在最外层事务结束的时候，再去触发所有的 reactions。
+- 尽管添加了一些测试样例，但是 Tinar 还处于一个原型阶段，还需要 `tinar-react` 和 Devtools
+- 欢迎在 issue 中畅所欲言。
 
 ## Usage
 
