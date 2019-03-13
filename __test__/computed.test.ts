@@ -42,6 +42,27 @@ test('autorun of computed', () => {
   expect(b.toArray()).toEqual(['eat_sleep', 'eat_sleep_code'])
 })
 
+test('nested computed', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  const c1 = computed(() => {
+    return obj.skills.join('_')
+  })
+  const c2 = computed(() => {
+    return c1.get().toUpperCase()
+  })
+
+  autorun(() => {
+    b(c2.get())
+  })
+
+  obj.skills.push('code1')
+  obj.skills[2] = 'CODE1'
+  obj.skills.push('CODE2')
+
+  expect(b.toArray()).toEqual(['EAT_SLEEP', 'EAT_SLEEP_CODE1', 'EAT_SLEEP_CODE1_CODE2'])
+})
+
 test('equals', () => {
   const obj = observable(getPlainObj())
   const b = buffer()
