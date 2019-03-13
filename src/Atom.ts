@@ -31,16 +31,19 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
-      // for get(){return ...}
+      // ⬇️ get(){ return ... } ⬇️
       const proto = Reflect.getPrototypeOf(target)
-      const des = Reflect.getOwnPropertyDescriptor(proto, prop)
-      if (des && des.get) {
-        const getterFn = des.get.bind(atom.proxy)
+      const selfDescriptor = Reflect.getOwnPropertyDescriptor(target, prop)
+      const protoDescriptor = Reflect.getOwnPropertyDescriptor(proto, prop)
+      const getter = (selfDescriptor && selfDescriptor.get) || (protoDescriptor && protoDescriptor.get)
+      if (getter) {
+        const getterFn = getter.bind(atom.proxy)
         const newComputed = new Computed(getterFn)
         atom.addProxiedProp(prop, newComputed as any)
         const computedResult = newComputed.get()
         return computedResult
       }
+      // ⬆️ get(){ return ... } ⬆️
 
       if (prop === $getOriginSource) {
         return target
