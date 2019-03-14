@@ -33,20 +33,97 @@ $ yarn add tinar
 - Although some test cases have been added, Tinar is still in a prototype phase and needs `tinar-react` and Devtools.
 - Feel free to leave any message in the issue.
 
-中文：
-
-- 就像 MobX 一样，Tinar 返回的对象并不是一个 plain object，而是通过 Proxy 代理的一个 Observable 或者 Computed 对象，所有的 get set 操作都会被劫持，这也使得收集依赖于触发反应成为了可能。
-- 有一个很重要的问题就是 Computed 值需要在真正更新时再触发，很多轻量的类 MobX 库没有做到这一点，这会导致重复的反应触发，Tinar 通过对 `set` 与函数调用的开始与结束进行事务操作，在事务中触发的 reaction 会被暂存而不会触发，并且只会有 one copy，在最外层事务结束的时候，再去触发所有的 reactions。
-- 尽管添加了一些测试样例，但是 Tinar 还处于一个原型阶段，还需要 `tinar-react` 和 Devtools
-- 欢迎在 issue 中畅所欲言。
-
 ## Usage
 
 ### Making things observable
 
-- [x] observable
-- [x] @observable
-- [x] objects
+<details>
+<summary>observable</summary>
+
+**API:**
+
+`observable(object)`
+
+**EXAMPLE:**
+
+```ts
+import { observable, autorun } from 'tinar'
+
+const counter = observable({ num: 0 })
+const countLogger = observe(() => console.log(counter.num))
+
+counter.num++
+// $ 1
+```
+
+</details>
+<details>
+<summary>@observable</summary>
+**API:**
+
+```ts
+@observable
+class Model {
+    ...
+}
+```
+
+**EXAMPLE:**
+
+```ts
+import { observable } from 'tinar'
+
+@observable
+class Model {
+  count = 0
+}
+
+const m = new Model()
+autorun(() => {
+  console.log(m.count)
+})
+
+m.count++
+// $ 1
+```
+
+</details>
+<details>
+<summary>object</summary>
+
+Any plain object passed into `observable` will turn to be a observable value.
+
+**EXAMPLE:**
+
+```ts
+import { observable } from 'tinar'
+
+const person = observable({
+  // observable properties:
+  name: 'John',
+  age: 25,
+  showAge: false,
+
+  // computed property:
+  get labelText() {
+    return `${this.name} (age: ${this.age})`
+  },
+
+  setAge(age) {
+    this.age = age
+  }
+})
+
+autorun(() => console.log(person.labelText))
+
+person.name = 'David'
+// $: David (age: 25)
+person.setAge(26)
+// $: David (age: 26)
+```
+
+</details>
+
 - [x] arrays
 - [ ] maps
 - [ ] boxed values
@@ -77,3 +154,13 @@ $ yarn add tinar
 ### Others
 
 - [ ] Devtools
+
+## Platform support
+
+- Node: 6+
+- Chrome: 49+
+- Firefox: 38+
+- Safari: 10+
+- Edge: 12+
+- Opera: 36+
+- IE: NEVER SUPPORTED
