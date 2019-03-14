@@ -61,10 +61,17 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       }
 
       if (typeof value === 'function') {
+        const inplaceNativeMethod = ['shift', 'unshift', 'push', 'pop', 'concat']
         let mayBoundFn = value
+        if (inplaceNativeMethod.indexOf(prop) >= 0) {
+          mayBoundFn = value.bind(receiver)
+          return mayBoundFn
+        }
+
+        mayBoundFn = value.bind(atom.proxy)
         // FIXME: why could not bind user-land method to receiver
         // if (isNativeMethod(prop, target[prop])) {
-        //   mayBoundFn = value.bind(receiver)
+        // mayBoundFn = value.bind(receiver)
         // }
 
         return mayBoundFn
@@ -77,7 +84,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
     set(target, prop, value, receiver) {
       const currPropInterceptor = atom.interceptors[prop]
       const oldValue = Reflect.get(target, prop, receiver)
-      const newValue = value
+      const newValue = isProxied(value) ? getSourceFromAtomProxy(value) : value
       const defaultChange = {
         oldValue,
         newValue
@@ -94,7 +101,13 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       if (resultOfInterceptor === null) return true
       // or normal change
       globalState.enterSet()
+      const oldLength = Reflect.get(target, 'length')
       Reflect.set(target, prop, resultOfInterceptor.newValue, receiver)
+      const newLength = Reflect.get(target, 'length')
+      // FIXME: hack, length is so easy to be modified by operation that not directly on `length` property
+      // if (oldLength !== newLength) {
+      //   reportChanged('length')
+      // }
       globalState.exitSet()
       reportChanged(prop)
       return true
@@ -115,7 +128,7 @@ class Atom {
   /**
    * original input plain object
    */
-  public value: any
+  public raw: any
   public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
   public source!: object
   // public isBeingTracked = false
@@ -131,7 +144,7 @@ class Atom {
   public computedProps: string[] = []
 
   public constructor(value: any) {
-    this.value = value
+    this.raw = value
     this.id = globalState.allocateAtomId()
     switch (true) {
       case Array.isArray(value):

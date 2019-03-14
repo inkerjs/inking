@@ -1,4 +1,4 @@
-import Atom from './Atom'
+import Atom, { getSourceFromAtomProxy } from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
 import { $atomOfProxy, $getOriginSource, $isProxied } from './types'
@@ -59,6 +59,9 @@ const createTraps = (): ProxyHandler<Atom> => {
       atom.set(prop, value)
       globalState.exitSet()
       return true
+    },
+    has(atom, property) {
+      return Reflect.has(atom.source, property)
     },
     ownKeys(atom) {
       // FIXME: mysterious bug with `Object.keys`

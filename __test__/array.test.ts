@@ -45,3 +45,25 @@ test('native method of array 3', () => {
   obj.skills[0] = 'say'
   expect(b.toArray()).toEqual(['eat', 's1', 'eat', 'say'])
 })
+
+/* tslint:disable */
+test('native method of array 3', () => {
+  const todos = observable([{ title: 'a', completed: true }, { title: 'b', completed: false }])
+  const b = buffer()
+
+  autorun(() => {
+    b(
+      todos
+        .filter(todo => !todo.completed)
+        .map(todo => todo.title)
+        .join('_')
+    )
+  })
+
+  todos[0].completed = false // a_b
+  todos[1].completed = true // a
+  todos.push({ title: 'c', completed: false }) // a_c
+  todos.pop() // a
+  todos.shift() // ''
+  expect(b.toArray()).toEqual(['b', 'a_b', 'a', 'a_c', 'a', ''])
+})
