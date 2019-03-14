@@ -1,3 +1,7 @@
+import Atom from './Atom'
+import { createComputed } from './computed'
+import { observable } from './observable'
+
 // import { endBatch, startBatch } from './observer'
 
 export function isPrimitive(value: any) {
@@ -65,6 +69,25 @@ export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function)
       beforeFn()
       try {
         return Reflect.apply(target, ctx, args)
+      } finally {
+        // AOP: after
+        afterFn()
+      }
+    }
+  })
+}
+
+export function aopFn2(targetFn: Function, beforeFn: Function, afterFn: Function, atom: Atom) {
+  return new Proxy(targetFn, {
+    apply(target, ctx, args) {
+      // AOP: before
+      beforeFn()
+      try {
+        const res = Reflect.apply(target, ctx, args)
+        if (typeof res === 'object') {
+          // return observable(res)
+        }
+        return res
       } finally {
         // AOP: after
         afterFn()

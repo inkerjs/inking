@@ -38,7 +38,7 @@ $ yarn add tinar
 ### Making things observable
 
 <details>
-<summary>observable</summary>
+<summary><strong>observable</strong></summary>
 
 **API:**
 
@@ -58,7 +58,8 @@ counter.num++
 
 </details>
 <details>
-<summary>@observable</summary>
+<summary><strong>@observable</strong></summary>
+
 **API:**
 
 ```ts
@@ -89,7 +90,7 @@ m.count++
 
 </details>
 <details>
-<summary>object</summary>
+<summary><strong>object</strong></summary>
 
 Any plain object passed into `observable` will turn to be a observable value.
 

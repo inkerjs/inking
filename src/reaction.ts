@@ -1,4 +1,4 @@
-import { resetCurrCollectingReactionEffect, unshiftCurrCollectingReactionEffect, SideEffect } from './observer'
+import { resetCurrCollectingReactionEffect, SideEffect, unshiftCurrCollectingReactionEffect } from './observer'
 
 type predicateType = (...args: any[]) => any
 type effectFn = (data: any) => any
