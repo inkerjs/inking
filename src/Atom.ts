@@ -84,7 +84,14 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
     set(target, prop, value, receiver) {
       const currPropInterceptor = atom.interceptors[prop]
       const oldValue = Reflect.get(target, prop, receiver)
-      const newValue = isProxied(value) ? getSourceFromAtomProxy(value) : value
+
+      let newValue = value
+
+      // new proxy for new property object is coming
+      if (atom.isPropProxied(prop)) {
+        delete atom.proxiedProps[prop]
+      }
+
       const defaultChange = {
         oldValue,
         newValue

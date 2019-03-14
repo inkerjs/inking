@@ -124,8 +124,39 @@ person.setAge(26)
 ```
 
 </details>
+<details>
+<summary><strong>array</strong></summary>
 
-- [x] arrays
+Any array passed into `observable` will turn to be a observable array, even nested.
+
+**EXAMPLE:**
+
+```ts
+const todos = observable([{ title: 'a', completed: true }, { title: 'b', completed: false }])
+
+autorun(() => {
+  console.log(
+    todos
+      .filter(todo => !todo.completed)
+      .map(todo => todo.title)
+      .join('_')
+  )
+})
+
+todos[0].completed = false
+// $ a_b
+todos[1].completed = true
+// $ a
+todos.push({ title: 'c', completed: false })
+// $ a_c
+todos.pop()
+// $ a
+todos.shift()
+// $
+```
+
+</details>
+
 - [ ] maps
 - [ ] boxed values
 - [ ] decorators
