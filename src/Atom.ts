@@ -89,6 +89,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
 
       // new proxy for new property object is coming
       if (atom.isPropProxied(prop)) {
+        atom.proxiedProps[prop] = null
         delete atom.proxiedProps[prop]
       }
 
