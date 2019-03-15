@@ -17,7 +17,6 @@ test('1', () => {
   obj.skills[2] = 'newCode'
   obj.skills[2] = 'NEWCODE'
 
-  // expect(b.toArray()).toEqual(['eat_sleep', 'code_eat_sleep', 'newcode_eat_sleep'])
   expect(b.toArray()).toEqual(['eat_sleep', 'eat_sleep_code', 'eat_sleep_newcode'])
 })
 

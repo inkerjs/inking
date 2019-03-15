@@ -61,6 +61,7 @@ const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
       }
 
       if (typeof value === 'function') {
+        // inplace operation, should be directly on source. If bind it onto atom, the change of length may lost in the procession
         const inplaceNativeMethod = ['shift', 'unshift', 'push', 'pop', 'concat']
         let mayBoundFn = value
         if (inplaceNativeMethod.indexOf(prop) >= 0) {

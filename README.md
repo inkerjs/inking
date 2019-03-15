@@ -29,9 +29,8 @@ $ yarn add tinar
 ## Concept
 
 - Just Like MobX, the object Tinar return is not a plain object, but an Observable or Computed object which is hijacked by Proxy. All `get` and `set` operations are hijacked, which makes it possible to collect dependencies on trigger reactions.
-- A very important issue is that the Computed value needs to be triggered when it is actually updated. Many lightweight class MobX libraries don't implement it, which causes repeated reaction triggers. Tinar start a transaction with the call to `set` and the function(AOP by Proxy). The reaction triggered in the transaction will not be invoked immediately, but staged and there will only be one copy in stash. And at the end of the outermost transaction, all the reactions will be triggered.
-- Although some test cases have been added, Tinar is still in a prototype phase and needs `tinar-react` and Devtools.
-- Feel free to leave any message in the issue.
+- Although some test cases have been added, Tinar is still in a prototype phase and needs `tinar-react` and devtools.
+- Feel free to leave any thing in the [issue](https://github.com/tinarjs/tinar/issues/new) ❤️.
 
 ## Usage
 
@@ -163,22 +162,224 @@ todos.shift()
 
 ### Reacting to observables
 
-- [x] computed
+<details>
+<summary><strong>computed</strong></summary>
+
+Computed values are values that can be derived from the existing state or other computed values.
+
+**EXAMPLE:**
+
+```ts
+import { observable, computed } from 'tinar'
+
+const obj = observable(['eat', 'sleep'])
+
+const c1 = computed(() => {
+  return obj.skills.join('_').toLowerCase()
+})
+
+autorun(() => {
+  console.log(c1.get())
+})
+
+obj.skills.push('code')
+// $ eat_sleep_code
+obj.skills[2] = 'newCode'
+// $ eat_sleep_newcode
+obj.skills[2] = 'NEWCODE'
+// will not print
+```
+
+Any getter property of in Class will turn to be a computed value automatically.
+
+**EXAMPLE:**
+
+```ts
+import { observable, computed } from 'tinar'
+
+@observable
+class Person {
+  public firstName = 'a'
+  public lastName = 'b'
+  public arr: any[] = [1, 2, 3]
+  public get fullName() {
+    return `${this.firstName}_${this.lastName}`.toUpperCase()
+  }
+}
+
+const p = new Person()
+
+autorun(() => {
+  console.log(p.fullName)
+})
+
+p.firstName = 'A'
+// will not print
+p.firstName = 'a'
+// will not print
+p.firstName = 'newA'
+// $ NEWA_B
+p.firstName = 'NEWA'
+// will not print
+```
+
+</details>
+
 - [x] @computed
-- [x] autorun
-- [x] when
-- [x] reaction
+
+</details>
+<details>
+<summary><strong>autorun</strong></summary>
+
+`autorun` can be used in those cases where you want to create a reactive function that will never have observers itself.
+
+**EXAMPLE:**
+
+```ts
+import { autorun } from 'tinar'
+
+// ⚠️ disposer is not implemented so far
+const disposer = autorun(reaction => {
+  /* do some stuff */
+})
+disposer()
+
+// or
+
+autorun(reaction => {
+  /* do some stuff */
+  reaction.dispose()
+})
+```
+
+</details>
+
+</details>
+
+<details>
+<summary><strong>when</strong></summary>
+
+`when` observes & runs the given `predicate` until it returns true. Once that happens, the given `effect` is executed and the autorunner is disposed. The function returns a disposer to cancel the autorunner prematurely.
+
+**EXAMPLE:**
+
+```ts
+import { observable, when } from 'tinar'
+
+const skills = observable(['eat', 'sleep'])
+
+when(
+  () => skills.length >= 3,
+  () => {
+    console.log(skills[skills.length - 1])
+  }
+)
+
+skills.push('code1')
+// $ code1
+skills.unshift('code2')
+// $ code1
+skills.pop()
+// $ sleep
+skills.shift()
+// $ will not print
+skills[0] = 'EAT'
+// $ will not print
+```
+
+</details>
+
+<details>
+<summary><strong>reaction</strong></summary>
+
+A variation on autorun that gives more fine grained control on which observables will be tracked.
+
+**EXAMPLE:**
+
+```ts
+import { observable, reaction } from 'tinar'
+
+const skills = observable(['eat', 'sleep'])
+
+reaction(
+  () => obj.skills.length,
+  () => {
+    console.log(obj.skills[obj.skills.length - 1])
+  }
+)
+
+skills.push('code1')
+// $ code1
+skills.unshift('code2')
+// $ code1
+skills.pop()
+// $ sleep
+skills.shift()
+// $ sleep
+skills[0] = 'EAT'
+// $ will not print
+```
+
+</details>
+
 - [x] @observer
 
 ### Changing observables
 
-- [x] action
+<details>
+<summary><strong>action</strong></summary>
+
+Any application has actions. Actions are anything that modify the state. With MobX you can make it explicit in your code where your actions live by marking them. Actions help you to structure your code better.
+
+**EXAMPLE:**
+
+```ts
+import { observable, action } from 'tinar'
+
+const skills = observable(['eat', 'sleep'])
+
+autorun(() => {
+  console.log(skills.[1])
+})
+
+const act = action(() => {
+  obj.skills.unshift('i1')
+  obj.skills.unshift('i2')
+  obj.skills.pop()
+  obj.skills.splice(0, 2, 'i3')
+  obj.skills.shift()
+})
+
+act()
+// $ undefined
+```
+
+</details>
+
 - [ ] async actions & flows
 - [ ] Object api
 
 ### Utility functions
 
-- [x] toJS
+<details>
+<summary><strong>toJS</strong></summary>
+
+Return raw value from observable value.
+
+**EXAMPLE:**
+
+```ts
+// a test case of Jest
+test('basic toJS', () => {
+  const obj = observable(getPlainObj())
+  const skills = obj.skills
+  expect(toJS(obj)).toEqual(getPlainObj())
+  expect(toJS(skills)).toEqual(getPlainObj().skills)
+})
+```
+
+</details>
+
 - [ ] extendObservable
 - [ ] createAtom
 - [ ] intercept & observe
