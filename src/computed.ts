@@ -2,7 +2,7 @@ import Atom from './Atom'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { IDecoratorPropsRestArgs } from './types'
-import { defaultComparer, IEqualsComparer } from './utils'
+import { defaultComparer, IEqualsComparer, invariant } from './utils'
 
 // TODO: implements part of Atom (so a common interface should be abstracted from Atom and implements by Atom and Computed)
 export default class Computed {
@@ -25,7 +25,7 @@ export default class Computed {
   /**
    * Atoms this Computed dependents on
    */
-  public observing: Atom[] = []
+  public observing: Atom<any>[] = []
   /**
    * side effects dependents on this Computed
    */
@@ -147,8 +147,10 @@ export function computed(...args): any {
     return createComputed(args[0], args[1])
   }
 
+  invariant(false, 'should pass a function or a class to `computed`')
+
+  // FW: make things easier for now, the getter of a class will automatically turned into computed values. But this could choose some specific props to be observable.
   // @computed
   // Class Model {...}
-  // TODO: Defensive programming
-  return createComputedDecorator(args)
+  // return createComputedDecorator(args)
 }

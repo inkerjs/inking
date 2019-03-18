@@ -15,7 +15,7 @@ export function getSourceFromAtomProxy(thing: any) {
   return thing
 }
 
-export function getAtomOfProxy<T>(thing: T): Atom | T {
+export function getAtomOfProxy<T>(thing: T): Atom<T> | T {
   if (isProxied(thing)) {
     return thing[$atomOfProxy]
   }
@@ -27,7 +27,7 @@ export interface IChange {
   newValue: any
 }
 
-const sourceHandleCreator = (atom: Atom, reportChanged: Function) => {
+function sourceHandleCreator<T>(atom: Atom<T>, reportChanged: Function) {
   return {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop)
@@ -132,13 +132,13 @@ interface ISideEffects {
 // But, what does it used for :-) ?
 export type AtomType = `object` | `array`
 // TODO: add generic <T> ?
-class Atom {
+class Atom<T> {
   public id: string
   /**
    * original input plain object
    */
-  public raw: any
-  public proxy!: any // TODO: type for a Proxy value is hard since proxy is transparent?
+  public raw: T
+  public proxy!: T
   public source!: object
   // public isBeingTracked = false
   public proxiedProps = {}
@@ -163,7 +163,7 @@ class Atom {
         this.atomType = `object`
         break
     }
-    this.source = new Proxy(value, sourceHandleCreator(this, this.reportChanged))
+    this.source = new Proxy(value, sourceHandleCreator<T>(this, this.reportChanged))
   }
 
   public isEqual: (oldValue: primitiveType, newValue: primitiveType) => boolean = (oldValue, newValue) => {
@@ -182,7 +182,7 @@ class Atom {
     }
   }
 
-  public addProxiedProp = (prop: string | number, atom: Atom) => {
+  public addProxiedProp = (prop: string | number, atom: Atom<T>) => {
     this.proxiedProps[prop] = atom
   }
 

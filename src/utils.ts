@@ -76,35 +76,3 @@ export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function)
     }
   })
 }
-
-export function aopFn2(targetFn: Function, beforeFn: Function, afterFn: Function, atom: Atom) {
-  return new Proxy(targetFn, {
-    apply(target, ctx, args) {
-      // AOP: before
-      beforeFn()
-      try {
-        const res = Reflect.apply(target, ctx, args)
-        // const length = ctx.length
-        // const i0 = ctx[0]
-        // const i1 = ctx[1]
-        // const bb = ctx === atom.proxy
-        // const cc = target === targetFn
-        // const res = Reflect.apply(Array.prototype.filter, ctx, [
-        //   item => {
-        //     console.log(item)
-        //   }
-        // ])
-        // const res3 = target.apply(ctx, args)
-        // const res5 = Array.prototype.filter === targetFn
-
-        // if (typeof res === 'object') {
-        //   return Reflect.apply(target, ctx, args)
-        // }
-        return res
-      } finally {
-        // AOP: after
-        afterFn()
-      }
-    }
-  })
-}

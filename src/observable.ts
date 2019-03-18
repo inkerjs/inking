@@ -2,11 +2,11 @@ import Atom, { getAtomOfProxy } from './Atom'
 import createTraps from './traps'
 import { IDecoratorPropsRestArgs } from './types'
 
-function createProxyOfAtom<T>(target: T) {
-  const atom = new Atom(target)
+function createProxyOfAtom<T>(target: T): T {
+  const atom = new Atom<T>(target)
   const proxy = new Proxy(atom, createTraps())
-  atom.proxy = proxy
-  return proxy as any
+  atom.proxy = (proxy as any) as T
+  return (proxy as any) as T
 }
 
 // @observable('a', 'b', 'c')
@@ -14,10 +14,10 @@ function createProxyOfAtom<T>(target: T) {
 function createClassObservableDecorator(props: IDecoratorPropsRestArgs) {
   let pickedProps: string[] = props as string[]
 
-  return function decorateClassObservable(TargetClass: any) {
+  return function decorateClassObservable<T>(TargetClass: T) {
     function wrap(...args: any[]) {
-      const proxy = createProxyOfAtom(new TargetClass(...args))
-      const atom = getAtomOfProxy(proxy) as Atom
+      const proxy = createProxyOfAtom(new (TargetClass as any)(...args))
+      const atom = getAtomOfProxy(proxy) as Atom<T>
       atom.pickedProps = pickedProps
       return proxy
     }
