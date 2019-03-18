@@ -6,7 +6,7 @@ let currentCollectingReactionEffect: SideEffect[] | null = null
 type SideEffectType = `computed` | `reaction`
 
 export interface IEffect {
-  dependencies: Atom[]
+  dependencies: Atom<any>[]
   predictFn: (...args: any) => boolean
   sideEffectFn: Function
 }
@@ -90,7 +90,7 @@ export class SideEffect implements IEffect {
     this.endTrack()
   }
 
-  public addDependency = (dependency: Atom | Computed) => {
+  public addDependency = (dependency: Atom<any> | Computed) => {
     if (this.dependencies.indexOf(dependency) < 0) {
       this.dependencies.push(dependency)
     }
