@@ -1,9 +1,3 @@
-import Atom from './Atom'
-import { createComputed } from './computed'
-import { observable } from './observable'
-
-// import { endBatch, startBatch } from './observer'
-
 export function isPrimitive(value: any) {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
 }
@@ -35,16 +29,6 @@ export function invariant(check: false, message?: string | boolean): never
 export function invariant(check: any, message?: string | boolean): void
 export function invariant(check: boolean, message?: string | boolean) {
   if (!check) throw new Error('[tinar] ' + (message || OBFUSCATED_ERROR))
-}
-
-export function once(func: Function): Function {
-  let invoked = false
-  return function() {
-    if (invoked) return
-    invoked = true
-    /* tslint:disable */
-    return (func as any).apply(this, arguments)
-  }
 }
 
 // export function makeFnInTransaction(fn: Function) {

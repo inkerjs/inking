@@ -12,6 +12,7 @@
   "types": "lib/index.d.ts",
   "typings": "lib/index.d.ts",
   "scripts": {
+    "dev": "tsc --watch",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "build": "tsc",

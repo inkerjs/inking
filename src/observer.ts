@@ -40,10 +40,7 @@ export function runPendingReactions() {
       globalState.pendingReactions.clear()
       return
     }
-    // FIXME: this is just a circumvention
-    // if (sideEffect.type === 'computed') {
-    //   return
-    // }
+
     sideEffect.runEffectWithPredict()
   })
 
@@ -53,7 +50,7 @@ export function runPendingReactions() {
 
 export class SideEffect implements IEffect {
   public id: string = globalState.allocateReactionId()
-  public type!: SideEffectType // TODO: assign it in constructor
+  public type: SideEffectType
   /**
    * for `reaction`, `when`, this is the first function argument
    */
@@ -68,8 +65,9 @@ export class SideEffect implements IEffect {
    */
   public dependencies: any[] = []
   public isInTracking = false
-  public constructor(fn: Function) {
-    this.sideEffectFn = fn
+  public constructor(type: SideEffectType, callback: Function) {
+    this.type = type
+    this.sideEffectFn = callback
   }
   public predictFn = () => true
 
@@ -137,7 +135,6 @@ export const resetCurrCollectingReactionEffect = () => {
 export const autorun = (fn: any, type: SideEffectType = 'reaction') => {
   // collect dependency
   // TODO: if multi run, use promise to delay or give every reaction a id?
-  const sideEffect = new SideEffect(fn)
-  sideEffect.type = type
+  const sideEffect = new SideEffect(type, fn)
   sideEffect.runInTrack(sideEffect.sideEffectFn)
 }

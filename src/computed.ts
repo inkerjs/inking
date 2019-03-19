@@ -45,8 +45,7 @@ export default class Computed {
     const boundRecompute = this.reCollectAndTriggerSideEffects.bind(this)
     // Each Computed has a SideEffect corresponding to it.
     // The SideEffect collects on valueComputeFn and it's side effect is run Computed's sideEffect.
-    const sideEffect = new SideEffect(boundRecompute)
-    sideEffect.type = 'computed'
+    const sideEffect = new SideEffect('computed', boundRecompute)
     this.internalSideEffect = sideEffect
     // collect dependencies
     this.collect()

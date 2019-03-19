@@ -2,7 +2,7 @@ import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
-import { defaultComparer, isNativeMethod, isPrimitive } from './utils'
+import { defaultComparer, isNativeMethod, isPrimitive, invariant } from './utils'
 
 export function isProxied(thing: any) {
   return !!thing[$isProxied]
@@ -131,7 +131,6 @@ interface ISideEffects {
 // TODO: Set, Map, WeakMap, primitive value
 // But, what does it used for :-) ?
 export type AtomType = `object` | `array`
-// TODO: add generic <T> ?
 class Atom<T> {
   public id: string
   /**
@@ -217,21 +216,17 @@ class Atom<T> {
     }
 
     this.sideEffects[prop].forEach(sideEffect => {
-      // isRunning transaction
-      // if (globalState.batchDepth > 0) {
-      //   globalState.pendingReactions.add(sideEffect)
-      // } else {
-      // computed should be directly "unzipped" to release the reactions
       switch (sideEffect.type) {
         case 'computed':
+          // computed should be directly "unzipped" to release the reactions
           sideEffect.runEffectWithPredict()
           break
-        default:
-          // TODO: some reaction do not have a type, `case 'reaction'` bugs
+        case 'reaction':
           globalState.simpleThunk.add(sideEffect)
           break
+        default:
+          invariant('type of side effect should be specified.')
       }
-      // }
     })
   }
 }
