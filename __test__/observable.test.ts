@@ -48,11 +48,15 @@ test('inherit action method', () => {
 test('native Object method', () => {
   const obj = observable(getPlainObj())
 
-  // TODO: Object.keys
   expect(Object.getOwnPropertyNames(obj)).toEqual(['name', 'family', 'pets', 'skills'])
   expect(Object.getOwnPropertyNames(obj.family)).toEqual(['father', 'mother'])
   expect(Object.getOwnPropertyNames(obj.pets)).toEqual(['0', 'length'])
   expect(Object.getOwnPropertyNames(obj.skills)).toEqual(['0', '1', 'length'])
+
+  expect(Object.keys(obj)).toEqual(['name', 'family', 'pets', 'skills'])
+  expect(Object.keys(obj.family)).toEqual(['father', 'mother'])
+  expect(Object.keys(obj.pets)).toEqual(['0', 'length'])
+  expect(Object.keys(obj.skills)).toEqual(['0', '1', 'length'])
 })
 
 test('dynamic properties', () => {

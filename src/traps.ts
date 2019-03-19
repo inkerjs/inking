@@ -61,10 +61,18 @@ const createTraps = (): ProxyHandler<Atom<any>> => {
       return true
     },
     has(atom, property) {
+      // SEE: https://stackoverflow.com/questions/40408917/array-prototype-foreach-not-working-when-called-on-a-proxy-with-a-get-handler
       return Reflect.has(atom.source, property)
     },
+    getOwnPropertyDescriptor(key) {
+      // TODO: should not just simple return
+      return {
+        enumerable: true,
+        configurable: true
+      }
+    },
     ownKeys(atom) {
-      // FIXME: mysterious bug with `Object.keys`
+      // SEE: https://stackoverflow.com/questions/40352613/why-does-object-keys-and-object-getownpropertynames-produce-different-output
       const keys = Reflect.ownKeys(atom.source)
       return keys
     }
