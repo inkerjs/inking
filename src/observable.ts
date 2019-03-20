@@ -47,8 +47,6 @@ const observableFactories: IObservableFactories = {
   }
 }
 
-// @observable('a', 'b', 'c')
-
 export function observable<T>(target: T): T
 export function observable(...props: IDecoratorPropsRestArgs): ClassDecorator
 export function observable(...props: IDecoratorPropsRestArgs): any {

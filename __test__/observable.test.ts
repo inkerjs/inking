@@ -99,6 +99,34 @@ test('nested native Object method', () => {
   expect(toJS(obj.skills)).toEqual(['xxx', 'eat', 'sleep', 'xxx'])
 })
 
+test('replace nested object', () => {
+  const obj = observable(getPlainObj())
+  const b1 = buffer()
+  const b2 = buffer()
+  autorun(() => {
+    b1(`${obj.family.father.name}_${obj.family.mother.name}`)
+  })
+
+  autorun(() => {
+    b2(obj.skills.join('_'))
+  })
+
+  obj.family = {
+    father: {
+      name: 'dad'
+    },
+    mother: {
+      name: 'mom'
+    }
+  }
+
+  obj.skills.push('code')
+  obj.skills = ['a', 'b']
+
+  expect(b1.toArray()).toEqual(['daddy_mummy', 'dad_mom'])
+  expect(b2.toArray()).toEqual(['eat_sleep', 'eat_sleep_code', 'a_b'])
+})
+
 test('@observable', () => {
   const b1 = buffer()
   const b2 = buffer()

@@ -2,7 +2,7 @@ import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { $atomOfProxy, $getOriginSource, $isProxied, primitiveType } from './types'
-import { defaultComparer, isNativeMethod, isPrimitive, invariant } from './utils'
+import { defaultComparer, invariant, isNativeMethod, isPrimitive } from './utils'
 
 export function isProxied(thing: any) {
   return !!thing[$isProxied]
@@ -53,7 +53,6 @@ function sourceHandleCreator<T>(atom: Atom<T>, reportChanged: Function) {
         // dependency collection timing
         const currReactionSideEffect = getCurrCollectingReactionEffect()
         // NOTE: when collecting dependencies, the effect actually just dependent on computed value, so if it's collecting in accessing computed value, observable value should not be dependent
-
         if (currReactionSideEffect && globalState.computedAccessDepth === 0) {
           atom.addReaction(prop as any, currReactionSideEffect)
         }
@@ -63,9 +62,15 @@ function sourceHandleCreator<T>(atom: Atom<T>, reportChanged: Function) {
       if (typeof value === 'function') {
         // inplace operation, should be directly on source. If bind it onto atom, the change of length may lost in the procession
         const inplaceNativeMethod = ['shift', 'unshift', 'push', 'pop', 'concat']
+        const setHacks = ['add']
         let mayBoundFn = value
         if (inplaceNativeMethod.indexOf(prop) >= 0) {
           mayBoundFn = value.bind(receiver)
+          return mayBoundFn
+        }
+
+        if (setHacks.indexOf(prop) >= 0) {
+          mayBoundFn = value.bind(target)
           return mayBoundFn
         }
 
@@ -87,11 +92,25 @@ function sourceHandleCreator<T>(atom: Atom<T>, reportChanged: Function) {
       const oldValue = Reflect.get(target, prop, receiver)
 
       let newValue = value
-
       // new proxy for new property object is coming
-      if (atom.isPropProxied(prop)) {
-        atom.proxiedProps[prop] = null
-        delete atom.proxiedProps[prop]
+      // recursive set primitive value
+      // delete no more used value
+      const propAtom: Atom<any> = atom.proxiedProps[prop]
+      if (typeof value === 'object' && atom.isPropProxied(prop)) {
+        // replace key
+        Object.getOwnPropertyNames(value).forEach(newKey => {
+          propAtom.proxy[newKey] = value[newKey]
+        })
+
+        // eliminate old key
+        const newKeys = Object.getOwnPropertyNames(value)
+        const oldKeys = Object.getOwnPropertyNames(getSourceFromAtomProxy(propAtom.proxy))
+        oldKeys.forEach(oldKey => {
+          if (newKeys.indexOf(oldKey) < 0) {
+            delete propAtom.proxy[oldKey]
+            propAtom.proxy[oldKey] = null
+          }
+        })
       }
 
       const defaultChange = {
