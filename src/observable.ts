@@ -1,12 +1,9 @@
 import Atom, { getAtomOfProxy } from './Atom'
-import createTraps from './traps'
+import onChange from './traps'
 import { IDecoratorPropsRestArgs } from './types'
 
 function createProxyOfAtom<T>(target: T): T {
-  const atom = new Atom<T>(target)
-  const proxy = new Proxy(atom, createTraps())
-  atom.proxy = (proxy as any) as T
-  return (proxy as any) as T
+  return onChange(target)
 }
 
 // @observable('a', 'b', 'c')

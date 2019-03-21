@@ -1,6 +1,6 @@
-import Atom from './Atom'
 import Computed from './computed'
 import { SideEffect } from './observer'
+import IAtom from './traps'
 
 let _atomId = 0
 let _derivationId = 0
@@ -8,6 +8,7 @@ let _reactionId = 0
 let _setDeep = 0
 
 export const globalState = {
+  rootCache: new WeakMap<Object, string[]>(),
   /**
    * indication is it in final reaction running
    */
@@ -53,19 +54,20 @@ export const globalState = {
         const currSideEffectDependencies = sideEffect.dependencies
         let shouldTrigger = false
         for (const dependency of currSideEffectDependencies) {
-          if (dependency instanceof Atom) {
-            shouldTrigger = true
-            // if atom changed, it definitely got a change
-            // do not need to check if should trigger anymore
-            break
-          }
+          shouldTrigger = true
+          // if (dependency instanceof IAtom) {
+          // shouldTrigger = true
+          // if atom changed, it definitely got a change
+          // do not need to check if should trigger anymore
+          // break
+          // }
 
-          if (dependency instanceof Computed) {
-            if (dependency.isStale() && !dependency.isEqual()) {
-              computedNeedToUpdate.push(dependency)
-              shouldTrigger = true
-            }
-          }
+          // if (dependency instanceof Computed) {
+          // if (dependency.isStale() && !dependency.isEqual()) {
+          //   computedNeedToUpdate.push(dependency)
+          //   shouldTrigger = true
+          // }
+          // }
         }
         if (shouldTrigger) {
           sideEffect.runInTrack(sideEffect.runEffectWithPredict)

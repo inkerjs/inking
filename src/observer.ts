@@ -1,12 +1,12 @@
-import Atom from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
+import { IAtom } from './traps'
 
 let currentCollectingReactionEffect: SideEffect[] | null = null
 type SideEffectType = `computed` | `reaction`
 
 export interface IEffect {
-  dependencies: Atom<any>[]
+  dependencies: IAtom[]
   predictFn: (...args: any) => boolean
   sideEffectFn: Function
 }
@@ -88,7 +88,7 @@ export class SideEffect implements IEffect {
     this.endTrack()
   }
 
-  public addDependency = (dependency: Atom<any> | Computed) => {
+  public addDependency = (dependency: IAtom | Computed) => {
     if (this.dependencies.indexOf(dependency) < 0) {
       this.dependencies.push(dependency)
     }
