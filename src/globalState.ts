@@ -1,6 +1,6 @@
-import Computed from './computed'
+import Atom from './Atom'
+import Computed, { computed } from './computed'
 import { SideEffect } from './observer'
-import IAtom from './traps'
 
 let _atomId = 0
 let _derivationId = 0
@@ -33,11 +33,11 @@ export const globalState = {
    * TODO: relationship with pending reactions?
    */
   simpleThunk: new Set<SideEffect>(),
-  intoCom() {
+  enterCom() {
     /* tslint:disable:no-invalid-this */
     globalState.computedAccessDepth++
   },
-  leaveCom() {
+  exitCom() {
     globalState.computedAccessDepth--
   },
   enterSet() {
@@ -49,32 +49,31 @@ export const globalState = {
       // console.log('⬆️️️️️️️⬆️⬆️')
       _setDeep = -1 // HACK:
       globalState.isRunningReactions = true
-      const computedNeedToUpdate: Computed[] = []
+      // const computedNeedToUpdate: Computed[] = []
       globalState.simpleThunk.forEach((sideEffect: SideEffect) => {
         const currSideEffectDependencies = sideEffect.dependencies
         let shouldTrigger = false
         for (const dependency of currSideEffectDependencies) {
-          shouldTrigger = true
-          // if (dependency instanceof IAtom) {
-          // shouldTrigger = true
-          // if atom changed, it definitely got a change
-          // do not need to check if should trigger anymore
-          // break
-          // }
+          if (dependency instanceof Atom) {
+            shouldTrigger = true
+            // if atom changed, it definitely got a change
+            // do not need to check if should trigger anymore
+          }
 
-          // if (dependency instanceof Computed) {
-          // if (dependency.isStale() && !dependency.isEqual()) {
-          //   computedNeedToUpdate.push(dependency)
-          //   shouldTrigger = true
-          // }
-          // }
+          if (dependency instanceof Computed) {
+            if (dependency.isStale() && !dependency.isEqual()) {
+              // computedNeedToUpdate.push(dependency)
+              shouldTrigger = true
+            }
+            dependency.refreshStaleValue()
+          }
         }
         if (shouldTrigger) {
           sideEffect.runInTrack(sideEffect.runEffectWithPredict)
         }
       })
       // everything is done, gonna ending this updating
-      computedNeedToUpdate.forEach(com => com.refreshValue())
+      // computedNeedToUpdate.forEach(com => com.refreshValue())
       globalState.simpleThunk.clear()
       globalState.isRunningReactions = false
       _setDeep = 0

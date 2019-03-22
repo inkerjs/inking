@@ -1,3 +1,6 @@
+import Atom from './Atom'
+import { createHandler, reportChanged } from './handlers'
+
 export function isPrimitive(value: any) {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
 }
@@ -31,20 +34,42 @@ export function invariant(check: boolean, message?: string | boolean) {
   if (!check) throw new Error('[tinar] ' + (message || OBFUSCATED_ERROR))
 }
 
-// export function makeFnInTransaction(fn: Function) {
-//   return new Proxy(fn, {
-//     apply(target, ctx, args) {
-//       // AOP: before
-//       startBatch()
-//       try {
-//         return Reflect.apply(target, ctx, args)
-//       } finally {
-//         // AOP: after
-//         endBatch()
-//       }
-//     }
-//   })
-// }
+export function clearSubPathCache(m: Map<string, Atom>, parentPath: string) {
+  const targetStarter = parentPath + '.'
+  m.forEach((value, key, map) => {
+    if (key.startsWith(targetStarter)) {
+      map.delete(key)
+    }
+  })
+}
+
+export function replaceSubPathCache(pathCache: Map<string, Atom>, parentPath: string, newParentValue: Object) {
+  const targetStarter = parentPath + '.'
+  pathCache.forEach((value, key, map) => {
+    if (key.startsWith(targetStarter)) {
+      const subAtom = value
+      const chainPath = key.split('.')
+      const parentChainPath = parentPath.split('.')
+      chainPath.splice(0, parentChainPath.length)
+      let newValue = newParentValue
+      chainPath.forEach(key => {
+        newValue = newValue[key]
+      })
+
+      if (isPrimitive(newValue)) {
+        const oldValue = subAtom.target
+        if (oldValue !== newValue) {
+          subAtom.target = newValue
+          reportChanged(subAtom)
+        }
+      } else {
+        const replaceProxy = new Proxy(newValue, createHandler(key, pathCache))
+        subAtom.target = newValue
+        subAtom.proxy = replaceProxy
+      }
+    }
+  })
+}
 
 export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function) {
   return new Proxy(targetFn, {

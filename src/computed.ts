@@ -14,6 +14,7 @@ export default class Computed {
    * real value of Computed
    */
   public value: any
+  public staleValue: any
   /**
    * for debug
    */
@@ -25,7 +26,7 @@ export default class Computed {
   /**
    * Atoms this Computed dependents on
    */
-  public observing: Atom<any>[] = []
+  public observing: Atom[] = []
   /**
    * side effects dependents on this Computed
    */
@@ -67,8 +68,12 @@ export default class Computed {
     return this.equals(this.value, this.valueComputeFn())
   }
 
+  public refreshStaleValue() {
+    this.staleValue = this.pureGetFreshValue()
+  }
+
   public isStale() {
-    const oldValue = this.value
+    const oldValue = this.staleValue
     return !defaultComparer(oldValue, this.valueComputeFn())
   }
 
@@ -82,7 +87,8 @@ export default class Computed {
 
   // get() will refresh the computed value
   public get() {
-    globalState.intoCom()
+    globalState.enterCom()
+    this.staleValue = this.pureGetFreshValue()
     const currReaction = getCurrCollectingReactionEffect()
     // 1. add dependency to current reaction.
     if (currReaction) {
@@ -93,7 +99,7 @@ export default class Computed {
 
     // 2. return a fresh value.
     this.value = this.pureGetFreshValue()
-    globalState.leaveCom()
+    globalState.exitCom()
     return this.value
   }
 

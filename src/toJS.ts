@@ -1,1 +1,1 @@
-export { getSourceFromAtomProxy as toJS } from './Atom'
+// export { getSourceFromAtomProxy as toJS } from './Atom'

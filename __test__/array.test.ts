@@ -47,7 +47,7 @@ test('native method of array 3', () => {
 })
 
 /* tslint:disable */
-test('native method of array 3', () => {
+test('native method of array 4', () => {
   const todos = observable([{ title: 'a', completed: true }, { title: 'b', completed: false }])
   const b = buffer()
 

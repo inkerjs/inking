@@ -1,9 +1,9 @@
-import Atom, { getAtomOfProxy } from './Atom'
-import onChange from './traps'
+import Atom from './Atom'
+import createRootObservable from './handlers'
 import { IDecoratorPropsRestArgs } from './types'
 
 function createProxyOfAtom<T>(target: T): T {
-  return onChange(target)
+  return createRootObservable(target)
 }
 
 // @observable('a', 'b', 'c')
@@ -11,15 +11,15 @@ function createProxyOfAtom<T>(target: T): T {
 function createClassObservableDecorator(props: IDecoratorPropsRestArgs) {
   let pickedProps: string[] = props as string[]
 
-  return function decorateClassObservable<T>(TargetClass: T) {
-    function wrap(...args: any[]) {
-      const proxy = createProxyOfAtom(new (TargetClass as any)(...args))
-      const atom = getAtomOfProxy(proxy) as Atom<T>
-      atom.pickedProps = pickedProps
-      return proxy
-    }
-    return wrap as any
-  }
+  // return function decorateClassObservable<T>(TargetClass: T) {
+  //   function wrap(...args: any[]) {
+  //     const proxy = createProxyOfAtom(new (TargetClass as any)(...args))
+  //     const atom = getAtomOfProxy(proxy) as Atom
+  //     atom.pickedProps = pickedProps
+  //     return proxy
+  //   }
+  //   return wrap as any
+  // }
 }
 
 // @observable
@@ -63,7 +63,8 @@ export function observable(...props: IDecoratorPropsRestArgs): any {
   // @observable('a', 'b', 'c')
   // Class Model {...}
   if (props.length > 1) {
-    return createClassObservableDecorator(props)
+    return decorateClassObservable(arg1)
+    // return createClassObservableDecorator(props)
   }
 
   throw Error('only accept an plain object or a Class')
