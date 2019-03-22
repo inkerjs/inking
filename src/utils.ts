@@ -1,5 +1,5 @@
 import Atom from './Atom'
-import { createHandler, reportChanged } from './handlers'
+import { createHandler } from './handlers'
 
 export function isPrimitive(value: any) {
   return value === null || (typeof value !== 'object' && typeof value !== 'function')
@@ -60,7 +60,7 @@ export function replaceSubPathCache(pathCache: Map<string, Atom>, parentPath: st
         const oldValue = subAtom.target
         if (oldValue !== newValue) {
           subAtom.target = newValue
-          reportChanged(subAtom)
+          subAtom.reportChanged()
         }
       } else {
         const replaceProxy = new Proxy(newValue, createHandler(key, pathCache))

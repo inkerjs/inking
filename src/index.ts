@@ -4,7 +4,7 @@ import { computed } from './computed'
 import { observable } from './observable'
 import { autorun } from './observer'
 import { reaction } from './reaction'
-// import { toJS } from './toJS'
+import { toJS } from './toJS'
 import { when } from './when'
 
-export { action, autorun, computed, /* intercept, */ observable, reaction, /* toJS, */ when }
+export { action, autorun, computed, /* intercept, */ observable, reaction, toJS, when }

@@ -2,6 +2,7 @@ import Atom from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
+import { $getOriginSource, $isProxied } from './types'
 import { aopFn, invariant, replaceSubPathCache } from './utils'
 
 const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
@@ -19,30 +20,18 @@ const concatPath = (path, prop) => {
   return resPath
 }
 
-export const reportChanged = (atom: Atom | undefined) => {
-  if (!atom) {
-    // invariant('should not set an undefined atom')
-    return
-  }
-
-  atom.sideEffects.forEach(sideEffect => {
-    switch (sideEffect.type) {
-      case 'computed':
-        // computed should be directly "unzipped" to release the reactions
-        sideEffect.runEffectWithPredict()
-        break
-      case 'reaction':
-        globalState.simpleThunk.add(sideEffect)
-        break
-      default:
-        invariant('type of side effect should be specified.')
-    }
-  })
-}
-
+/* tslint:disable:cyclomatic-complexity */
 export function createHandler(parentPath: string, pathCache: Map<string, Atom>) {
   return {
     get(target, prop, receiver) {
+      if (prop === $isProxied) {
+        return true
+      }
+
+      if (prop === $getOriginSource) {
+        return target
+      }
+
       const path = concatPath(parentPath, prop)
       // getter
       const proto = Reflect.getPrototypeOf(target)
@@ -143,7 +132,10 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
       if (prop !== 'length' && prevLength !== newLength) {
         receiver.length = newLength
         const lengthPath = concatPath(parentPath, 'length')
-        reportChanged(pathCache.get(lengthPath))
+        const lengthAtom = pathCache.get(lengthPath)
+        if (lengthAtom) {
+          lengthAtom.reportChanged()
+        }
       }
 
       const oldAtom = pathCache.get(path)
@@ -159,7 +151,9 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
       } else {
         // modify primitive value
         if (prevValue !== newValue) {
-          reportChanged(oldAtom)
+          if (oldAtom) {
+            oldAtom.reportChanged()
+          }
         }
       }
 
