@@ -1,12 +1,18 @@
 import { globalState } from './globalState'
 import { createHandler } from './handlers'
+import { IChange } from './intercept'
 import { SideEffect } from './observer'
-import { invariant, Lambda } from './utils'
+import { defaultComparer, invariant, Lambda } from './utils'
+
+type Interceptor = (change: IChange) => IChange | null
+function defaultInterceptor(change: IChange) {
+  return change
+}
 
 export default class Atom {
+  public interceptor: Interceptor = defaultInterceptor
   public path: string
   public target: any
-  public interceptor?: Lambda
   public proxy: Object | null
   public sideEffects: SideEffect[] = []
   public constructor(path: string, target: any, proxy) {
@@ -25,11 +31,23 @@ export default class Atom {
     this.sideEffects = oldSideEffects
   }
 
-  public registerInterceptor = (interceptor: Lambda) => {
+  public registerInterceptor = (interceptor: Interceptor) => {
     this.interceptor = interceptor
   }
 
-  public reportChanged = () => {
+  public resetInterceptor = () => {
+    this.interceptor = defaultInterceptor
+  }
+
+  public isIntercepted = (oldValue: any, newValue: any): boolean => {
+    const interceptRes = this.interceptor({ oldValue, newValue })
+    return interceptRes === null ? true : false
+  }
+
+  public reportChanged = (oldValue: any, newValue: any) => {
+    const interceptRes = this.interceptor({ oldValue, newValue })
+    if (interceptRes === null) return
+
     this.sideEffects.forEach(sideEffect => {
       switch (sideEffect.type) {
         case 'computed':

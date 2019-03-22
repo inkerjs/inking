@@ -2,7 +2,7 @@ import Atom from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
-import { $getOriginSource, $isProxied } from './types'
+import { $getOriginSource, $getPath, $getRootCache, $isProxied } from './types'
 import { aopFn, invariant, replaceSubPathCache } from './utils'
 
 const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
@@ -20,10 +20,22 @@ const concatPath = (path, prop) => {
   return resPath
 }
 
+export function getPathCache(thing: any): Map<string, Atom> {
+  return thing[$getRootCache] || null
+}
+
+export function getPath(thing: any): string | null {
+  return thing[$getPath]
+}
+
 /* tslint:disable:cyclomatic-complexity */
 export function createHandler(parentPath: string, pathCache: Map<string, Atom>) {
   return {
     get(target, prop, receiver) {
+      if (prop === $getRootCache) {
+        return pathCache
+      }
+
       if (prop === $isProxied) {
         return true
       }
@@ -32,8 +44,12 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
         return target
       }
 
-      const path = concatPath(parentPath, prop)
+      if (prop === $getPath) {
+        return parentPath
+      }
+
       // getter
+      const path = concatPath(parentPath, prop)
       const proto = Reflect.getPrototypeOf(target)
       const selfDescriptor = Reflect.getOwnPropertyDescriptor(target, prop)
       const protoDescriptor = Reflect.getOwnPropertyDescriptor(proto, prop)
@@ -125,8 +141,16 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
 
       const path = concatPath(parentPath, prop)
       const prevValue = Reflect.get(target, prop, receiver)
+      const oldAtom = pathCache.get(path)
+
       // FIXME: hack for length
       const prevLength = Reflect.get(target, 'length', receiver)
+      if (oldAtom) {
+        const interceptRes = oldAtom.isIntercepted(prevValue, newValue)
+        if (interceptRes) {
+          return true
+        }
+      }
       const result = Reflect.set(target, prop, newValue)
       const newLength = Reflect.get(target, 'length', receiver)
       if (prop !== 'length' && prevLength !== newLength) {
@@ -134,11 +158,11 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
         const lengthPath = concatPath(parentPath, 'length')
         const lengthAtom = pathCache.get(lengthPath)
         if (lengthAtom) {
-          lengthAtom.reportChanged()
+          lengthAtom.reportChanged(prevLength, newLength)
         }
       }
+      // FIXME: hack for length
 
-      const oldAtom = pathCache.get(path)
       if (typeof newValue === 'object') {
         // replace with a new object
         const replaceProxy = new Proxy(newValue, createHandler(path, pathCache))
@@ -152,7 +176,7 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
         // modify primitive value
         if (prevValue !== newValue) {
           if (oldAtom) {
-            oldAtom.reportChanged()
+            oldAtom.reportChanged(prevValue, newValue)
           }
         }
       }
@@ -204,10 +228,6 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
 const proxyTarget = Symbol('ProxyTarget')
 
 const createRootObservable = object => {
-  let inApply = false
-  let changed = false
-  const observableCache = new WeakMap()
-  const propCache = new WeakMap()
   const pathCache = new Map<string, Atom>()
 
   // const handleChange = (path, prop, previous, value?) => {

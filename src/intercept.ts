@@ -1,27 +1,37 @@
-// import Atom, { IChange } from './Atom'
-// import { Lambda } from './utils'
+import Atom from './Atom'
+import { getPath, getPathCache } from './handlers'
+import { accessStringPath, Lambda } from './utils'
 
-// type IInterceptor = (IChange) => IChange | null
+export interface IChange {
+  oldValue: any
+  newValue: any
+}
 
-// function interceptProperty(thing, prop, handler) {
-//   const atom = getAtomOfProxy(thing)
-//   if (!(atom instanceof Atom)) {
-//     throw new Error('thing[prop] should be a atom')
-//   }
+type IInterceptor = (IChange) => IChange | null
 
-//   atom.interceptors[prop] = handler
-//   return () => {
-//     delete atom.interceptors[prop]
-//   }
-// }
+function interceptProperty(thing, prop, handler) {
+  const pathCache = getPathCache(thing)
+  if (!pathCache) return
+  const parentPath = getPath(thing)
+  if (parentPath === null) return
+  const propPath = `${parentPath === '' ? '' : parentPath + '.'}${prop}`
+  const _get = thing[prop] // touch it
+  const targetAtom = pathCache.get(propPath)
+  if (!targetAtom) return
+  targetAtom.registerInterceptor(handler)
 
-// // TODO: accept a `observable.box()` value
-// function interceptAtom(thing, handler) {}
+  return () => {
+    targetAtom.resetInterceptor()
+  }
+}
 
-// export function intercept(obj: any, handler: IInterceptor): any
-// export function intercept(obj: any, property: string, handler: IInterceptor): Lambda
+// TODO: accept a `observable.box()` value
+function interceptAtom(thing, handler) {}
 
-// export function intercept(thing: any, propOrHandler, handler?): any {
-//   if (typeof handler === 'function') return interceptProperty(thing, propOrHandler, handler)
-//   return interceptAtom(thing, propOrHandler)
-// }
+export function intercept(obj: any, handler: IInterceptor): any
+export function intercept(obj: any, property: string, handler: IInterceptor): Lambda
+
+export function intercept(thing: any, propOrHandler, handler?): any {
+  if (typeof handler === 'function') return interceptProperty(thing, propOrHandler, handler)
+  return interceptAtom(thing, propOrHandler)
+}

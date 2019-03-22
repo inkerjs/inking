@@ -1,3 +1,5 @@
+export const $getRootCache = Symbol(`I'm a Observable Atom!`)
+export const $getPath = Symbol(`I'm a Observable Atom!`)
 export const $isProxied = Symbol(`I'm a Observable Atom!`)
 export const $atomOfProxy = Symbol(`Return atom from proxy`)
 export const $getOriginSource = Symbol(`Return the origin plain object from proxy`)

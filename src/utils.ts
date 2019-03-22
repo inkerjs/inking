@@ -43,6 +43,15 @@ export function clearSubPathCache(m: Map<string, Atom>, parentPath: string) {
   })
 }
 
+export function accessStringPath(path: string, target: any) {
+  const chainPath = path.split('.')
+  let newValue = target
+  chainPath.forEach(key => {
+    newValue = newValue[key]
+  })
+  return newValue
+}
+
 export function replaceSubPathCache(pathCache: Map<string, Atom>, parentPath: string, newParentValue: Object) {
   const targetStarter = parentPath + '.'
   pathCache.forEach((value, key, map) => {
@@ -60,7 +69,7 @@ export function replaceSubPathCache(pathCache: Map<string, Atom>, parentPath: st
         const oldValue = subAtom.target
         if (oldValue !== newValue) {
           subAtom.target = newValue
-          subAtom.reportChanged()
+          subAtom.reportChanged(oldValue, newValue)
         }
       } else {
         const replaceProxy = new Proxy(newValue, createHandler(key, pathCache))
