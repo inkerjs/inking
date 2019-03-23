@@ -21,8 +21,8 @@ export default class Atom {
     this.proxy = proxy
   }
 
-  public addReaction = (reaction: SideEffect | undefined | null) => {
-    if (reaction instanceof SideEffect && this.sideEffects.indexOf(reaction) < 0) {
+  public addReaction = (reaction: SideEffect | undefined | null, extraCondition = true) => {
+    if (reaction instanceof SideEffect && this.sideEffects.indexOf(reaction) < 0 && extraCondition) {
       this.sideEffects.push(reaction)
     }
   }

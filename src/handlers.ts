@@ -2,10 +2,8 @@ import Atom from './Atom'
 import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
-import { $getOriginSource, $getPath, $getRootCache, $isProxied } from './types'
-import { aopFn, invariant, replaceSubPathCache } from './utils'
-
-const isPrimitive = value => value === null || (typeof value !== 'object' && typeof value !== 'function')
+import { $getOriginSource, $getPath, $getRootCache, $isProxied, $notGetter } from './types'
+import { aopFn, clearSubPathCache, isPrimitive, replaceSubPathCache } from './utils'
 
 const concatPath = (path, prop) => {
   let resPath = path
@@ -16,7 +14,6 @@ const concatPath = (path, prop) => {
 
     resPath += prop.toString()
   }
-
   return resPath
 }
 
@@ -24,144 +21,127 @@ export function getPathCache(thing: any): Map<string, Atom> {
   return thing[$getRootCache] || null
 }
 
-export function getPath(thing: any): string | null {
+export function getPath(thing: any): string | undefined {
   return thing[$getPath]
+}
+
+function handleGetter(
+  target: any,
+  prop: string,
+  receiver: any,
+  path: string,
+  cachedAtom: any,
+  pathCache: Map<string, Atom>
+) {
+  // getter
+  const proto = Reflect.getPrototypeOf(target)
+  const selfDescriptor = Reflect.getOwnPropertyDescriptor(target, prop)
+  const protoDescriptor = Reflect.getOwnPropertyDescriptor(proto, prop)
+  const getter = (selfDescriptor && selfDescriptor.get) || (protoDescriptor && protoDescriptor.get)
+  if (getter) {
+    if (cachedAtom instanceof Computed) {
+      return cachedAtom.get()
+    }
+    const newComputed = new Computed(getter.bind(receiver))
+    pathCache.set(path, newComputed as any)
+    const computedResult = newComputed.get()
+    return computedResult
+  }
+
+  return $notGetter
+}
+
+function relateAtomAndReaction(atom: Atom, reaction: SideEffect | null) {
+  if (atom instanceof Atom && reaction instanceof SideEffect) {
+    atom.addReaction(reaction, !globalState.isInCom())
+    reaction.addDependency(atom, !globalState.isInCom())
+  }
 }
 
 /* tslint:disable:cyclomatic-complexity */
 export function createHandler(parentPath: string, pathCache: Map<string, Atom>) {
   return {
     get(target, prop, receiver) {
-      if (prop === $getRootCache) {
-        return pathCache
-      }
-
-      if (prop === $isProxied) {
-        return true
-      }
-
-      if (prop === $getOriginSource) {
-        return target
-      }
-
-      if (prop === $getPath) {
-        return parentPath
+      // internal assessor
+      switch (prop) {
+        case $getRootCache:
+          return pathCache
+        case $isProxied:
+          return true
+        case $getOriginSource:
+          return target
+        case $getPath:
+          return parentPath
       }
 
       // getter
       const path = concatPath(parentPath, prop)
-      const proto = Reflect.getPrototypeOf(target)
-      const selfDescriptor = Reflect.getOwnPropertyDescriptor(target, prop)
-      const protoDescriptor = Reflect.getOwnPropertyDescriptor(proto, prop)
       const cachedAtom = pathCache.get(path)
-      const getter = (selfDescriptor && selfDescriptor.get) || (protoDescriptor && protoDescriptor.get)
-      if (getter) {
-        if (cachedAtom instanceof Computed) {
-          return cachedAtom.get()
-        }
-        const newComputed = new Computed(getter.bind(receiver))
-        pathCache.set(path, newComputed as any)
-        const computedResult = newComputed.get()
-        return computedResult
-      }
+      const getterRes = handleGetter(target, prop, receiver, path, cachedAtom, pathCache)
+      // priority handle getter
+      if (getterRes !== $notGetter) return getterRes
 
-      const reaction = getCurrCollectingReactionEffect()
       const value = Reflect.get(target, prop, receiver)
-
-      if (prop === proxyTarget) {
-        return target
-      }
+      const reaction = getCurrCollectingReactionEffect()
 
       if (typeof value === 'function') {
         // return reaction ? aopFn(value, globalState.enterSet, globalState.exitSet) : value
         return aopFn(value, globalState.enterSet, globalState.exitSet)
       }
 
-      // if cached
+      // === if cached ===
       if (cachedAtom) {
-        if (reaction && cachedAtom.sideEffects.indexOf(reaction) < 0) {
-          if (globalState.computedAccessDepth === 0) {
-            cachedAtom.sideEffects.push(reaction)
-            reaction.addDependency(cachedAtom)
-          }
-        }
-
+        // reaction is collecting
+        relateAtomAndReaction(cachedAtom, reaction)
         if (isPrimitive(value)) return value
-
         return cachedAtom.proxy
       }
 
-      // if not cached
-
+      // === if not cached ===
       // create primitive cache
-      if (isPrimitive(value) || prop === 'constructor') {
+      if (isPrimitive(value)) {
         const primitiveAtom = new Atom(path, value, null)
         primitiveAtom.addReaction(reaction)
         pathCache.set(path, primitiveAtom)
-
-        if (reaction) {
-          if (globalState.computedAccessDepth === 0) {
-            reaction.addDependency(primitiveAtom)
-          }
-        }
+        relateAtomAndReaction(primitiveAtom, reaction)
         return value
       }
 
       // create object cache
       const proxy = new Proxy(value, createHandler(path, pathCache))
       const newAtom = new Atom(path, target, proxy)
-      newAtom.addReaction(reaction)
-      pathCache.set(path, newAtom)
-      if (reaction) {
-        if (globalState.computedAccessDepth === 0) {
-          reaction.addDependency(newAtom)
-        }
-      }
+      relateAtomAndReaction(newAtom, reaction)
       return proxy
-
-      // Preserve invariants
-      // const descriptor = getOwnpropDescriptor(target, prop)
-      // if (descriptor && !descriptor.configurable) {
-      //   if (descriptor.set && !descriptor.get) {
-      //     return undefined
-      //   }
-
-      //   if (descriptor.writable === false) {
-      //     return value
-      //   }
-      // }
     },
 
     set(target, prop, newValue, receiver) {
       globalState.enterSet()
-      if (newValue && newValue[proxyTarget] !== undefined) {
-        /* tslint:disable */
-        newValue = newValue[proxyTarget]
-      }
-
       const path = concatPath(parentPath, prop)
-      const prevValue = Reflect.get(target, prop, receiver)
+      const oldValue = Reflect.get(target, prop, receiver)
       const oldAtom = pathCache.get(path)
 
-      // FIXME: hack for length
-      const prevLength = Reflect.get(target, 'length', receiver)
       if (oldAtom) {
-        const interceptRes = oldAtom.isIntercepted(prevValue, newValue)
+        const interceptRes = oldAtom.isIntercepted(oldValue, newValue)
         if (interceptRes) {
           return true
         }
       }
+
+      const prevLength = Reflect.get(target, 'length', receiver)
       const result = Reflect.set(target, prop, newValue)
       const newLength = Reflect.get(target, 'length', receiver)
-      if (prop !== 'length' && prevLength !== newLength) {
-        receiver.length = newLength
-        const lengthPath = concatPath(parentPath, 'length')
-        const lengthAtom = pathCache.get(lengthPath)
-        if (lengthAtom) {
-          lengthAtom.reportChanged(prevLength, newLength)
+
+      // FIXME: hack for Array length
+      if (Array.isArray(target)) {
+        if (prop !== 'length' && prevLength !== newLength) {
+          receiver.length = newLength
+          const lengthPath = concatPath(parentPath, 'length')
+          const lengthAtom = pathCache.get(lengthPath)
+          if (lengthAtom) {
+            lengthAtom.reportChanged(prevLength, newLength)
+          }
         }
       }
-      // FIXME: hack for length
 
       if (typeof newValue === 'object') {
         // replace with a new object
@@ -174,9 +154,10 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
         replaceSubPathCache(pathCache, path, newValue)
       } else {
         // modify primitive value
-        if (prevValue !== newValue) {
+        if (oldValue !== newValue) {
           if (oldAtom) {
-            oldAtom.reportChanged(prevValue, newValue)
+            oldAtom.reportChanged(oldValue, newValue)
+            clearSubPathCache(pathCache, path)
           }
         }
       }
@@ -184,87 +165,11 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
       globalState.exitSet()
       return result
     }
-
-    // defineprop(target, prop, descriptor) {
-    //   const result = Reflect.defineprop(target, prop, descriptor)
-    //   invalidateCachedDescriptor(target, prop)
-
-    //   handleChange(pathCache.get(target), prop, undefined, descriptor.value)
-
-    //   return result
-    // },
-
-    // deleteprop(target, prop) {
-    //   const previous = Reflect.get(target, prop)
-    //   const result = Reflect.deleteprop(target, prop)
-    //   invalidateCachedDescriptor(target, prop)
-
-    //   handleChange(pathCache.get(target), prop, previous)
-
-    //   return result
-    // },
-
-    // apply(target, thisArg, argumentsList) {
-    //   if (!inApply) {
-    //     inApply = true
-
-    //     const result = Reflect.apply(target, thisArg, argumentsList)
-
-    //     if (changed) {
-    //       onChange()
-    //     }
-
-    //     inApply = false
-    //     changed = false
-
-    //     return result
-    //   }
-
-    //   return Reflect.apply(target, thisArg, argumentsList)
-    // }
   }
 }
 
-const proxyTarget = Symbol('ProxyTarget')
-
-const createRootObservable = object => {
+const createRootObservableRoot = object => {
   const pathCache = new Map<string, Atom>()
-
-  // const handleChange = (path, prop, previous, value?) => {
-  //   if (!inApply) {
-  //     onChange.call(proxy, concatPath(path, prop), value, previous)
-  //   } else if (!changed) {
-  //     changed = true
-  //   }
-  // }
-
-  // const getOwnpropDescriptor = (target, prop) => {
-  //   let props = propCache.get(target)
-
-  //   if (props) {
-  //     return props
-  //   }
-
-  //   props = new Map()
-  //   propCache.set(target, props)
-
-  //   let prop = props.get(prop)
-  //   if (!prop) {
-  //     prop = Reflect.getOwnpropDescriptor(target, prop)
-  //     props.set(prop, prop)
-  //   }
-
-  //   return prop
-  // }
-
-  // const invalidateCachedDescriptor = (target, prop) => {
-  //   const props = propCache.get(target)
-
-  //   if (props) {
-  //     props.delete(prop)
-  //   }
-  // }
-
   const handler = createHandler('', pathCache)
   const proxy = new Proxy(object, handler)
   pathCache.set('', new Atom('', proxy, object))
@@ -272,4 +177,4 @@ const createRootObservable = object => {
   return proxy
 }
 
-export default createRootObservable
+export default createRootObservableRoot

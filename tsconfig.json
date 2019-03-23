@@ -10,7 +10,7 @@
     "outDir": "lib",
     "sourceMap": true,
     "declaration": true,
-    "removeComments": false,
+    "removeComments": true,
     "strict": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,

@@ -88,8 +88,8 @@ export class SideEffect implements IEffect {
     this.endTrack()
   }
 
-  public addDependency = (dependency: Atom | Computed) => {
-    if (this.dependencies.indexOf(dependency) < 0) {
+  public addDependency = (dependency: Atom | Computed, extraCondition = true) => {
+    if (this.dependencies.indexOf(dependency) < 0 && extraCondition) {
       this.dependencies.push(dependency)
     }
   }

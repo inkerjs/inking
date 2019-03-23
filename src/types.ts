@@ -1,8 +1,7 @@
-export const $getRootCache = Symbol(`I'm a Observable Atom!`)
-export const $getPath = Symbol(`I'm a Observable Atom!`)
+export const $getRootCache = Symbol(`return root pathCache`)
+export const $getPath = Symbol(`get current prop path!`)
+export const $notGetter = Symbol(`not a getter`)
 export const $isProxied = Symbol(`I'm a Observable Atom!`)
-export const $atomOfProxy = Symbol(`Return atom from proxy`)
 export const $getOriginSource = Symbol(`Return the origin plain object from proxy`)
-// export const $tinar = Symbol('tinar proxy')
 export type primitiveType = string | number | boolean | symbol | null | undefined
 export type IDecoratorPropsRestArgs = string[] | void[]

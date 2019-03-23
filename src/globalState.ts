@@ -22,10 +22,6 @@ export const globalState = {
    */
   isPendingTransaction: false,
   /**
-   * transaction depth
-   */
-  // batchDepth: 0,
-  /**
    * pending reactions
    */
   pendingReactions: new Set<SideEffect>(),
@@ -39,6 +35,9 @@ export const globalState = {
   },
   exitCom() {
     globalState.computedAccessDepth--
+  },
+  isInCom() {
+    return this.computedAccessDepth > 0
   },
   enterSet() {
     _setDeep++
