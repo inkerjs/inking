@@ -21,6 +21,41 @@ test('1', () => {
 })
 
 test('2', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  const c1 = computed(() => {
+    return obj.family.father.name + '_' + obj.family.mother.name
+  })
+  autorun(() => {
+    b(c1.get())
+  })
+
+  obj.family = {
+    father: {
+      name: 'daddy'
+    },
+    mother: {
+      name: 'mummy'
+    }
+  }
+
+  obj.family = {
+    father: {
+      name: 'dad'
+    },
+    mother: {
+      name: 'mom'
+    }
+  }
+
+  obj.family.mother = {
+    name: 'mama'
+  }
+
+  expect(b.toArray()).toEqual(['daddy_mummy', 'dad_mom', 'dad_mama'])
+})
+
+test('3', () => {
   const b1 = buffer()
   const b2 = buffer()
   @observable
@@ -52,7 +87,7 @@ test('2', () => {
   expect(b2.toArray()).toEqual(['a A_B', 'A A_B', 'a A_B', 'newA NEWA_B', 'NEWA NEWA_B'])
 })
 
-test('3', () => {
+test('4', () => {
   const b1 = buffer()
   const b2 = buffer()
   @observable

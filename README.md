@@ -7,12 +7,13 @@
     <p align="center">
         <i>
             <a href="https://www.npmjs.com/package/inking">
-              <img src="https://img.shields.io/npm/v/inking.svg?color=%2361AFEF" alt="NPM Version">
+              <img src="https://badgen.net/npm/v/inking" alt="NPM Version">
             </a>
             <a href="https://circleci.com/gh/inkerjs/inking">
-              <img src="https://img.shields.io/circleci/project/github/inkerjs/inking/master.svg" alt="Build Status">
+              <img src="https://badgen.net/circleci/github/inkerjs/inking">
+<a href='https://coveralls.io/github/inkerjs/inking?branch=master'><img src='https://badgen.net/bundlephobia/minzip/inking' alt='Coverage Status' /></a>
             </a>
-<a href='https://coveralls.io/github/inkerjs/inking?branch=master'><img src='https://coveralls.io/repos/github/inkerjs/inking/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
+<a href='https://coveralls.io/github/inkerjs/inking?branch=master'><img src='https://badgen.net/coveralls/c/github/inkerjs/inking/master' alt='Coverage Status' /></a>
         </i>
     </p>
 </p>
