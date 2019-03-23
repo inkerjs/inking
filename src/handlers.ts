@@ -58,8 +58,12 @@ function relateAtomAndReaction(atom: Atom, reaction: SideEffect | null) {
   }
 }
 
+interface IHandlerOptions {
+  pickedProps: string[]
+}
+
 /* tslint:disable:cyclomatic-complexity */
-export function createHandler(parentPath: string, pathCache: Map<string, Atom>) {
+export function createHandler(parentPath: string, pathCache: Map<string, Atom>, options?: IHandlerOptions) {
   return {
     get(target, prop, receiver) {
       // internal assessor
@@ -72,6 +76,13 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
           return target
         case $getPath:
           return parentPath
+      }
+
+      // ignore non-picked prop
+      if (options && options.pickedProps) {
+        if (options.pickedProps.indexOf(prop) < 0) {
+          return Reflect.get(target, prop, receiver)
+        }
       }
 
       // getter
@@ -168,9 +179,14 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>) 
   }
 }
 
-const createRootObservableRoot = object => {
+interface ICreateRootOptions {
+  pickedProps: string[]
+}
+
+const createRootObservableRoot = (object: any, options?: ICreateRootOptions) => {
   const pathCache = new Map<string, Atom>()
-  const handler = createHandler('', pathCache)
+  const rootHandlerOptions = options ? { pickedProps: options.pickedProps } : undefined
+  const handler = createHandler('', pathCache, rootHandlerOptions)
   const proxy = new Proxy(object, handler)
   pathCache.set('', new Atom('', proxy, object))
 
