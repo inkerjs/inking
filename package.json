@@ -1,7 +1,7 @@
 {
-  "name": "tinar",
-  "version": "0.0.3",
-  "description": "🍉 Light-weight MobX like date management library",
+  "name": "inking",
+  "version": "0.0.1",
+  "description": "❄️Light-weight reactive date management library.",
   "main": "lib/index.js",
   "files": [
     "lib/"
@@ -22,12 +22,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fi3ework/tinar"
+    "url": "https://github.com/inkerjs/inking"
   },
   "bugs": {
-    "url": "https://github.com/fi3ework/tinar"
+    "url": "https://github.com/inkerjs/inking"
   },
-  "homepage": "https://github.com/fi3ework/tinar",
+  "homepage": "https://github.com/inkerjs/inking",
   "devDependencies": {
     "@types/jest": "^23.0.0",
     "coveralls": "^3.0.3",

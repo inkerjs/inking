@@ -31,7 +31,7 @@ export const OBFUSCATED_ERROR =
 export function invariant(check: false, message?: string | boolean): never
 export function invariant(check: any, message?: string | boolean): void
 export function invariant(check: boolean, message?: string | boolean) {
-  if (!check) throw new Error('[tinar] ' + (message || OBFUSCATED_ERROR))
+  if (!check) throw new Error('[inking] ' + (message || OBFUSCATED_ERROR))
 }
 
 export function clearSubPathCache(m: Map<string, Atom>, parentPath: string) {

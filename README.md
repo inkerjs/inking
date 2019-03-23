@@ -1,18 +1,18 @@
 <p align="center">
     <img src="https://avatars1.githubusercontent.com/u/48382962?s=400&u=ffd89adba11de83090001040bbcdc8eb094dac55&v=4" height=100/>
-    <h1 align="center">Tinar</h1>
+    <h1 align="center">Inking</h1>
     <p align="center">
         Lightweight MobX like date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
     <p>
     <p align="center">
         <i>
-            <a href="https://www.npmjs.com/package/tinar">
-              <img src="https://img.shields.io/npm/v/tinar.svg?color=%2361AFEF" alt="NPM Version">
+            <a href="https://www.npmjs.com/package/inking">
+              <img src="https://img.shields.io/npm/v/inking.svg?color=%2361AFEF" alt="NPM Version">
             </a>
-            <a href="https://circleci.com/gh/tinarjs/tinar">
-              <img src="https://img.shields.io/circleci/project/github/tinarjs/tinar/master.svg" alt="Build Status">
+            <a href="https://circleci.com/gh/inkerjs/inking">
+              <img src="https://img.shields.io/circleci/project/github/inkerjs/inking/master.svg" alt="Build Status">
             </a>
-<a href='https://coveralls.io/github/fi3ework/tinar?branch=master'><img src='https://coveralls.io/repos/github/fi3ework/tinar/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
+<a href='https://coveralls.io/github/inkerjs/inking?branch=master'><img src='https://coveralls.io/repos/github/inkerjs/inking/badge.svg?branch=master&amp;t=CTNsds' alt='Coverage Status' /></a>
         </i>
     </p>
 </p>
@@ -20,18 +20,18 @@
 ## Install
 
 ```
-$ yarn add tinar
+$ yarn add inking
 ```
 
 ## Motivation
 
-[Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) is an awesome feature feature of ES2015. Base on it, we can do meta-programming and hijack object's native operations easier and more seamless. Tinar is a state manage library based on Proxy and inspired by awesome [MobX](https://github.com/mobxjs/mobx).
+[Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) is an awesome feature feature of ES2015. Base on it, we can do meta-programming and hijack object's native operations easier and more seamless. Inking is a state manage library based on Proxy and inspired by awesome [MobX](https://github.com/mobxjs/mobx).
 
 ## Concept
 
-- Just Like MobX, the object Tinar return is not a plain object, but an Observable or Computed object which is hijacked by Proxy. All `get` and `set` operations are hijacked, which makes it possible to collect dependencies on trigger reactions.
-- Although some test cases have been added, Tinar is still in a prototype phase and needs `tinar-react` and devtools.
-- Feel free to leave any thing in the [issue](https://github.com/tinarjs/tinar/issues/new) ❤️.
+- Just Like MobX, the object Inking return is not a plain object, but an Observable or Computed object which is hijacked by Proxy. All `get` and `set` operations are hijacked, which makes it possible to collect dependencies on trigger reactions.
+- Although some test cases have been added, Inking is still in a prototype phase and needs `inking-react` and devtools.
+- Feel free to leave any thing in the [issue](https://github.com/inkerjs/inking/issues/new) ❤️.
 
 ## Usage
 
@@ -47,7 +47,7 @@ $ yarn add tinar
 **EXAMPLE:**
 
 ```ts
-import { observable, autorun } from 'tinar'
+import { observable, autorun } from 'inking'
 
 const counter = observable({ num: 0 })
 const countLogger = observe(() => console.log(counter.num))
@@ -72,7 +72,7 @@ class Model {
 **EXAMPLE:**
 
 ```ts
-import { observable } from 'tinar'
+import { observable } from 'inking'
 
 @observable
 class Model {
@@ -97,7 +97,7 @@ Any plain object passed into `observable` will turn to be a observable value.
 **EXAMPLE:**
 
 ```ts
-import { observable } from 'tinar'
+import { observable } from 'inking'
 
 const person = observable({
   // observable properties:
@@ -171,7 +171,7 @@ Computed values are values that can be derived from the existing state or other 
 **EXAMPLE:**
 
 ```ts
-import { observable, computed } from 'tinar'
+import { observable, computed } from 'inking'
 
 const obj = observable(['eat', 'sleep'])
 
@@ -196,7 +196,7 @@ Any getter property of in Class will turn to be a computed value automatically.
 **EXAMPLE:**
 
 ```ts
-import { observable, computed } from 'tinar'
+import { observable, computed } from 'inking'
 
 @observable
 class Person {
@@ -237,7 +237,7 @@ p.firstName = 'NEWA'
 **EXAMPLE:**
 
 ```ts
-import { autorun } from 'tinar'
+import { autorun } from 'inking'
 
 // ⚠️ disposer is not implemented so far
 const disposer = autorun(reaction => {
@@ -265,7 +265,7 @@ autorun(reaction => {
 **EXAMPLE:**
 
 ```ts
-import { observable, when } from 'tinar'
+import { observable, when } from 'inking'
 
 const skills = observable(['eat', 'sleep'])
 
@@ -298,7 +298,7 @@ A variation on autorun that gives more fine grained control on which observables
 **EXAMPLE:**
 
 ```ts
-import { observable, reaction } from 'tinar'
+import { observable, reaction } from 'inking'
 
 const skills = observable(['eat', 'sleep'])
 
@@ -335,7 +335,7 @@ Any application has actions. Actions are anything that modify the state. With Mo
 **EXAMPLE:**
 
 ```ts
-import { observable, action } from 'tinar'
+import { observable, action } from 'inking'
 
 const skills = observable(['eat', 'sleep'])
 
