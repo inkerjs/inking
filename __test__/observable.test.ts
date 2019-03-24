@@ -231,3 +231,28 @@ test('tracking of new property', () => {
   p.arr[3] = 'new 4'
   expect(toJS(p.arr)).toEqual([1, 2, 'new 3', 'new 4'])
 })
+
+test('cross object observe', () => {
+  const buf = buffer()
+  @observable
+  class A {
+    public arr: any[] = [1, 2, 3]
+  }
+  const a = new A()
+
+  @observable
+  class B {
+    public get aLength() {
+      return a.arr.length
+    }
+  }
+
+  const b = new B()
+  autorun(() => buf(b.aLength))
+
+  expect(b.aLength).toBe(3)
+  a.arr[0] = 1
+  a.arr.unshift(0)
+  expect(b.aLength).toBe(4)
+  expect(buf.toArray()).toEqual([3, 4])
+})

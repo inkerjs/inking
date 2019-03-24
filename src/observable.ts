@@ -1,6 +1,6 @@
 import Atom from './Atom'
 import createRootObservableRoot from './handlers'
-import { IDecoratorPropsRestArgs } from './types'
+import { IDecoratorPropsRestArgs, primitiveType } from './types'
 
 // @observable('a', 'b', 'c')
 // Class Model {...}
@@ -25,11 +25,11 @@ function decorateClassObservable(TargetClass: any) {
 }
 
 export interface IObservableFactories {
-  box<T = any>(value: T): T
+  box<T extends primitiveType>(value: T): T
 }
 
 const observableFactories: IObservableFactories = {
-  box<T = any>(value: T) {
+  box<T extends primitiveType>(value: T) {
     if (typeof value === 'object') {
       throw Error(`do not use \`observable.box\` to make a primitive value to be observable, use observable directly.`)
     }

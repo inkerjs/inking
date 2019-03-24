@@ -183,11 +183,21 @@ interface ICreateRootOptions {
   pickedProps: string[]
 }
 
-const createRootObservableRoot = (object: any, options?: ICreateRootOptions) => {
+function createRootObservableRoot<T>(object: T, options?: ICreateRootOptions): T {
   const pathCache = new Map<string, Atom>()
   const rootHandlerOptions = options ? { pickedProps: options.pickedProps } : undefined
   const handler = createHandler('', pathCache, rootHandlerOptions)
-  const proxy = new Proxy(object, handler)
+  const proxy: T = new Proxy(object, handler)
+  pathCache.set('', new Atom('', proxy, object))
+
+  return proxy
+}
+
+function createRootOBoxRoot<T>(object: T, options?: ICreateRootOptions): T {
+  const pathCache = new Map<string, Atom>()
+  
+  const handler = createHandler('', pathCache)
+  const proxy: T = new Proxy(object, handler)
   pathCache.set('', new Atom('', proxy, object))
 
   return proxy
