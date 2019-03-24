@@ -1,6 +1,6 @@
 {
   "name": "inking",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Light-weight reactive date management library.",
   "main": "lib/index.js",
   "module": "lib/index.module.js",
@@ -27,7 +27,7 @@
     "pub-build": "ts-node scripts/build.ts",
     "prettier": "prettier --write './**/*.ts' './**/*.js'",
     "lint": "tslint './src/**/*.?(ts|tsx)'",
-    "prepublishOnly": "yarn run lint && yarn test:all"
+    "prepublishOnly": "yarn run lint && yarn test:all && yarn pub-build"
   },
   "author": "fi3ework",
   "license": "MIT",
