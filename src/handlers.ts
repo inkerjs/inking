@@ -195,7 +195,7 @@ function createRootObservableRoot<T>(object: T, options?: ICreateRootOptions): T
 
 function createRootOBoxRoot<T>(object: T, options?: ICreateRootOptions): T {
   const pathCache = new Map<string, Atom>()
-  
+
   const handler = createHandler('', pathCache)
   const proxy: T = new Proxy(object, handler)
   pathCache.set('', new Atom('', proxy, object))
