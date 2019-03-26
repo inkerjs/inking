@@ -1,8 +1,7 @@
 <p align="center">
-    <img src="https://avatars1.githubusercontent.com/u/48382962?s=100&v=4" height=100/>
+    <img src="https://avatars1.githubusercontent.com/u/48382962?s=300&v=4" height=100/>
     <h1 align="center">Inking</h1>
-    <p align="center">
-        Lightweight MobX like date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
+    <p align="center">Light-weight reactive date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
     <p>
     <p align="center">
         <i>

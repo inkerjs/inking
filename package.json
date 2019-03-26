@@ -71,8 +71,5 @@
       "prettier --write",
       "git add"
     ]
-  },
-  "pre-commit": [
-    "lint"
-  ]
+  }
 }
