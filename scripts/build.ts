@@ -65,7 +65,14 @@ function generateBundledModule(inputFile, outputFile, format) {
   return rollup
     .rollup({
       input: inputFile,
-      plugins: rollupPlugins
+      plugins: rollupPlugins,
+      onwarn: warning => {
+        // Silence circular dependency warning for moment package
+        if (warning.code === 'CIRCULAR_DEPENDENCY') {
+          return
+        }
+        console.warn(`(!) ${warning.message}`)
+      }
     })
     .then(bundle =>
       bundle.write({
