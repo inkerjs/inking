@@ -1,6 +1,7 @@
 import Atom from './Atom'
 import createRootObservableRoot from './handlers'
 import { IDecoratorPropsRestArgs, primitiveType } from './types'
+import { invariant } from './utils'
 
 // @observable('a', 'b', 'c')
 // Class Model {...}
@@ -30,8 +31,11 @@ export interface IObservableFactories {
 
 const observableFactories: IObservableFactories = {
   box<T extends primitiveType>(value: T) {
-    if (typeof value === 'object') {
-      throw Error(`do not use \`observable.box\` to make a primitive value to be observable, use observable directly.`)
+    if (process.env.NODE_ENV !== 'production') {
+      invariant(
+        value === 'object',
+        `do not use \`observable.box\` to make a primitive value to be observable, use observable directly.`
+      )
     }
     return createRootObservableRoot(value)
   }
@@ -60,7 +64,9 @@ export function observable(...props: IDecoratorPropsRestArgs): any {
     return createClassObservableDecorator(props)
   }
 
-  throw Error('only accept an plain object or a Class')
+  if (process.env.NODE_ENV !== 'production') {
+    invariant(`only accept an plain object or a Class.`)
+  }
 }
 
 Object.keys(observableFactories).forEach(name => (observable[name] = observableFactories[name]))

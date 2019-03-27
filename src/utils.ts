@@ -28,9 +28,11 @@ export interface Lambda {
 export const OBFUSCATED_ERROR =
   'An invariant failed, however the error is obfuscated because this is an production build.'
 
+export function invariant(message: string): void
 export function invariant(check: false, message?: string | boolean): never
 export function invariant(check: any, message?: string | boolean): void
-export function invariant(check: boolean, message?: string | boolean) {
+export function invariant(check: boolean | string, message?: string | boolean) {
+  if (arguments.length === 1 && typeof check === 'string') throw new Error('[inking] ' + (check || OBFUSCATED_ERROR))
   if (!check) throw new Error('[inking] ' + (message || OBFUSCATED_ERROR))
 }
 

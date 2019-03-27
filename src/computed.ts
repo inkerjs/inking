@@ -109,7 +109,9 @@ export default class Computed {
   }
 
   public set() {
-    throw Error(`do not try to set a computed value, it's automatic computed.`)
+    if (process.env.NODE_ENV !== 'production') {
+      invariant(`do not try to set a computed value, it's automatic computed.`)
+    }
   }
 }
 
