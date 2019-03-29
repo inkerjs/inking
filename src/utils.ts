@@ -54,35 +54,45 @@ export function accessStringPath(path: string, target: any) {
   return newValue
 }
 
+export function updateAtom(oldAtom: Atom, newValue: any, path: string, pathCache: Map<string, Atom>) {
+  const oldValue = oldAtom.target
+  oldAtom.target = newValue
+  // update atom
+  if (isPrimitive(newValue)) {
+    oldAtom.type = 'primitive'
+    oldAtom.proxy = null
+  } else {
+    oldAtom.type = 'object'
+    const newProxy = new Proxy(newValue, createHandler(path, pathCache))
+    oldAtom.proxy = newProxy
+  }
+
+  if (oldAtom.shouldShallowUpdate(oldValue, newValue)) {
+    oldAtom.reportChanged(oldValue, newValue)
+  }
+}
+
 export function replaceSubPathCache(pathCache: Map<string, Atom>, parentPath: string, newParentValue: Object) {
   const targetStarter = parentPath + '.'
-  pathCache.forEach((value, key, map) => {
-    if (key.startsWith(targetStarter)) {
-      const subAtom = value
+  pathCache.forEach((subAtom: any, key: string) => {
+    if (key.startsWith(targetStarter) || key === parentPath) {
       const chainPath = key.split('.')
       const parentChainPath = parentPath.split('.')
       chainPath.splice(0, parentChainPath.length)
+      // may catch error here, but in expect
       let newValue = newParentValue
       chainPath.forEach(key => {
         newValue = newValue[key]
       })
 
-      if (isPrimitive(newValue)) {
-        const oldValue = subAtom.target
-        if (oldValue !== newValue) {
-          subAtom.target = newValue
-          subAtom.reportChanged(oldValue, newValue)
-        }
-      } else {
-        const replaceProxy = new Proxy(newValue, createHandler(key, pathCache))
-        subAtom.target = newValue
-        subAtom.proxy = replaceProxy
-      }
+      // new added props will do nothing
+      // replaced props will inherit reactions
+      updateAtom(subAtom, newValue, key, pathCache)
     }
   })
 }
 
-export function aopFn(targetFn: Function, beforeFn: Function, afterFn: Function) {
+export function aop(targetFn: Function, beforeFn: Function, afterFn: Function) {
   return new Proxy(targetFn, {
     apply(target, ctx, args) {
       // AOP: before

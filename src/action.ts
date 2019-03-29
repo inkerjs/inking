@@ -1,15 +1,15 @@
 import { globalState } from './globalState'
 // import { endBatch, startBatch } from './observer'
 
-export function runInTransaction(name: string, fn: (...args: any[]) => any, args: any[]) {
-  // bind `this` of fn before into runInTransaction
-  globalState.enterSet()
+export function runInTransaction(name: string, boundFn: (...args: any[]) => any, args: any[]) {
   // startBatch()
+  globalState.enterSet()
   try {
-    return fn(...args)
+    // bind `this` of fn before into runInTransaction
+    return boundFn(...args)
   } finally {
-    globalState.exitSet()
     // endBatch()
+    globalState.exitSet()
   }
 }
 

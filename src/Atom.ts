@@ -1,15 +1,16 @@
 import { globalState } from './globalState'
-import { createHandler } from './handlers'
 import { IChange } from './intercept'
 import { SideEffect } from './observer'
-import { defaultComparer, invariant, Lambda } from './utils'
+import { invariant, defaultComparer } from './utils'
 
 type Interceptor = (change: IChange) => IChange | null
+type IAtomType = 'primitive' | 'object'
 function defaultInterceptor(change: IChange) {
   return change
 }
 
 export default class Atom {
+  public type!: IAtomType
   public interceptor: Interceptor = defaultInterceptor
   public path: string
   public target: any
@@ -27,8 +28,8 @@ export default class Atom {
     }
   }
 
-  public inheritSideEffects = (oldSideEffects: SideEffect[]) => {
-    this.sideEffects = oldSideEffects
+  public inheritSideEffects = (oldAtom: Atom) => {
+    this.sideEffects = oldAtom.sideEffects
   }
 
   public registerInterceptor = (interceptor: Interceptor) => {
@@ -43,6 +44,8 @@ export default class Atom {
     const interceptRes = this.interceptor({ oldValue, newValue })
     return interceptRes === null ? true : false
   }
+
+  public shouldShallowUpdate = (oldValue: any, newValue: any) => !defaultComparer(oldValue, newValue)
 
   public reportChanged = (oldValue: any, newValue: any) => {
     const interceptRes = this.interceptor({ oldValue, newValue })

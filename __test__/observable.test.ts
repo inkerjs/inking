@@ -23,6 +23,22 @@ test('observable of array', () => {
   expect(b.toArray()).toEqual(['Adam', 'David'])
 })
 
+test('replace object', () => {
+  const obj = observable(getPlainObj())
+  const b = buffer()
+  autorun(() => {
+    b(obj.family.father.name + '_' + obj.family.mother.name)
+  })
+  obj.family = {
+    father: {
+      name: 'a'
+    },
+    mother: { name: 'b' }
+  }
+
+  expect(b.toArray()).toEqual(['daddy_mummy', 'a_b'])
+})
+
 test('inherit action method', () => {
   const b = buffer()
   const proto = {

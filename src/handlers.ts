@@ -3,16 +3,12 @@ import Computed from './computed'
 import { globalState } from './globalState'
 import { getCurrCollectingReactionEffect, SideEffect } from './observer'
 import { $getOriginSource, $getPath, $getRootCache, $isProxied, $notGetter } from './types'
-import { aopFn, clearSubPathCache, isPrimitive, replaceSubPathCache } from './utils'
+import { aop, clearSubPathCache, isPrimitive, replaceSubPathCache } from './utils'
 
-const concatPath = (path, prop) => {
-  let resPath = path
-  if (prop && prop.toString) {
-    if (resPath) {
-      resPath += '.'
-    }
-
-    resPath += prop.toString()
+const concatPath = (basePath: string, prop: string): string => {
+  let resPath = basePath
+  if (typeof prop === 'string' && typeof basePath === 'string') {
+    resPath += resPath === '' ? prop.toString() : `.${prop.toString()}`
   }
   return resPath
 }
@@ -62,7 +58,6 @@ interface IHandlerOptions {
   pickedProps: string[]
 }
 
-/* tslint:disable:cyclomatic-complexity */
 export function createHandler(parentPath: string, pathCache: Map<string, Atom>, options?: IHandlerOptions) {
   return {
     get(target, prop, receiver) {
@@ -96,8 +91,7 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
       const reaction = getCurrCollectingReactionEffect()
 
       if (typeof value === 'function') {
-        // return reaction ? aopFn(value, globalState.enterSet, globalState.exitSet) : value
-        return aopFn(value, globalState.enterSet, globalState.exitSet)
+        return aop(value, globalState.enterSet, globalState.exitSet)
       }
 
       // === if cached ===
@@ -112,6 +106,7 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
       // create primitive cache
       if (isPrimitive(value)) {
         const primitiveAtom = new Atom(path, value, null)
+        primitiveAtom.type = 'primitive'
         primitiveAtom.addReaction(reaction)
         pathCache.set(path, primitiveAtom)
         relateAtomAndReaction(primitiveAtom, reaction)
@@ -120,7 +115,8 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
 
       // create object cache
       const proxy = new Proxy(value, createHandler(path, pathCache))
-      const newAtom = new Atom(path, target, proxy)
+      const newAtom = new Atom(path, value, proxy)
+      newAtom.type = 'object'
       relateAtomAndReaction(newAtom, reaction)
       return proxy
     },
@@ -154,25 +150,7 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
         }
       }
 
-      if (typeof newValue === 'object') {
-        // replace with a new object
-        const replaceProxy = new Proxy(newValue, createHandler(path, pathCache))
-        const newAtom = new Atom(path, target, replaceProxy)
-        if (oldAtom) {
-          newAtom.inheritSideEffects(oldAtom.sideEffects)
-        }
-        pathCache.set(path, newAtom)
-        replaceSubPathCache(pathCache, path, newValue)
-      } else {
-        // modify primitive value
-        if (oldValue !== newValue) {
-          if (oldAtom) {
-            oldAtom.reportChanged(oldValue, newValue)
-            clearSubPathCache(pathCache, path)
-          }
-        }
-      }
-
+      replaceSubPathCache(pathCache, path, newValue)
       globalState.exitSet()
       return result
     }
@@ -188,19 +166,21 @@ function createRootObservableRoot<T>(object: T, options?: ICreateRootOptions): T
   const rootHandlerOptions = options ? { pickedProps: options.pickedProps } : undefined
   const handler = createHandler('', pathCache, rootHandlerOptions)
   const proxy: T = new Proxy(object, handler)
-  pathCache.set('', new Atom('', proxy, object))
+  const newAtom = new Atom('', proxy, object)
+  newAtom.type = 'object'
+  pathCache.set('', newAtom)
 
   return proxy
 }
 
-function createRootOBoxRoot<T>(object: T, options?: ICreateRootOptions): T {
-  const pathCache = new Map<string, Atom>()
+// function createRootOBoxRoot<T>(object: T, options?: ICreateRootOptions): T {
+//   const pathCache = new Map<string, Atom>()
 
-  const handler = createHandler('', pathCache)
-  const proxy: T = new Proxy(object, handler)
-  pathCache.set('', new Atom('', proxy, object))
+//   const handler = createHandler('', pathCache)
+//   const proxy: T = new Proxy(object, handler)
+//   pathCache.set('', new Atom('', proxy, object))
 
-  return proxy
-}
+//   return proxy
+// }
 
 export default createRootObservableRoot
