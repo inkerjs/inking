@@ -1,9 +1,9 @@
 <p align="center">
-    <img src="https://avatars1.githubusercontent.com/u/48382962?s=300&v=4" height=100/>
-    <h1 align="center">Inking</h1>
-    <p align="center">Light-weight reactive date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
+    <img align="left" height='150' width='150' src="https://avatars1.githubusercontent.com/u/48382962?s=450&v=4" height=100/>
+    <h1 align="left">Inking</h1>
+    <p align="left">Light-weight reactive date management library based on ES2015 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
     <p>
-    <p align="center">
+    <p align="left">
         <i>
             <a href="https://www.npmjs.com/package/inking">
               <img src="https://badgen.net/npm/v/inking" alt="NPM Version">
@@ -17,10 +17,23 @@
     </p>
 </p>
 
-## Install
+## Features
 
-```
+- ❄️ **Light-weight**, only 3.3KB after gziped.
+- 🎯 **Accurate**, reactions are triggered only when they are needed.
+- 💡 **TypeScript supported**, exact type inference.
+- 🧩 **Middleware supported**, still working in progress.
+
+## Installation
+
+```bash
 $ yarn add inking
+```
+
+or
+
+```bash
+$ npm i inking
 ```
 
 ## Motivation
@@ -29,9 +42,9 @@ $ yarn add inking
 
 ## Concept
 
-- Just Like MobX, the object Inking return is not a plain object, but an Observable or Computed object which is hijacked by Proxy. All `get` and `set` operations are hijacked, which makes it possible to collect dependencies on trigger reactions.
-- Although some test cases have been added, Inking is still in a prototype phase and needs `inking-react` and devtools.
-- Feel free to leave any thing in the [issue](https://github.com/inkerjs/inking/issues/new) ❤️.
+- Just Like MobX, any used property of an observable object or class instance in `autorun`, `reaction`, `when` will be collected as dependency of the current reaction and trigger the reaction when it changed.
+- Although a number of test cases have been added, Inking is still in a prototype phase and needs `inking-react` and devtools to play with React.
+- Feel free to leave any thing in the [issue](https://github.com/inkerjs/inking/issues/new).
 
 ## Usage
 
@@ -157,9 +170,8 @@ todos.shift()
 
 </details>
 
-- [ ] maps
+- [ ] map / set
 - [ ] boxed values
-- [ ] decorators
 
 ### Reacting to observables
 
@@ -226,8 +238,6 @@ p.firstName = 'NEWA'
 
 </details>
 
-- [x] @computed
-
 </details>
 <details>
 <summary><strong>autorun</strong></summary>
@@ -259,7 +269,6 @@ autorun(reaction => {
 
 <details>
 <summary><strong>when</strong></summary>
-
 `when` observes & runs the given `predicate` until it returns true. Once that happens, the given `effect` is executed and the autorunner is disposed. The function returns a disposer to cancel the autorunner prematurely.
 
 **EXAMPLE:**
@@ -323,7 +332,7 @@ skills[0] = 'EAT'
 
 </details>
 
-- [x] @observer
+- [ ] @observer
 
 ### Changing observables
 
@@ -383,7 +392,8 @@ test('basic toJS', () => {
 
 - [ ] extendObservable
 - [ ] createAtom
-- [ ] intercept & observe
+- [x] intercept
+- [ ] observe
 
 ### Others
 
@@ -391,10 +401,10 @@ test('basic toJS', () => {
 
 ## Platform support
 
-- Node: 6+
-- Chrome: 49+
-- Firefox: 38+
-- Safari: 10+
-- Edge: 12+
-- Opera: 36+
-- IE: NEVER SUPPORTED
+- **Node**: 6+
+- **Chrome**: 49+
+- **Firefox**: 38+
+- **Safari**: 10+
+- **Edge**: 12+
+- **Opera**: 36+
+- **Internet Explorer**: 🚫
