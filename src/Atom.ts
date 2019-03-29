@@ -1,7 +1,7 @@
 import { globalState } from './globalState'
 import { IChange } from './intercept'
 import { SideEffect } from './observer'
-import { invariant, defaultComparer } from './utils'
+import { defaultComparer, invariant } from './utils'
 
 type Interceptor = (change: IChange) => IChange | null
 type IAtomType = 'primitive' | 'object'

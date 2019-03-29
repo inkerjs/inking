@@ -60,6 +60,17 @@ interface IHandlerOptions {
 
 export function createHandler(parentPath: string, pathCache: Map<string, Atom>, options?: IHandlerOptions) {
   return {
+    ownKeys(target) {
+      const keys = Reflect.ownKeys(target)
+      const reaction = getCurrCollectingReactionEffect()
+      if (reaction) {
+        const ownKeysPath = `${parentPath}.$$$ownKeys`
+        const atom = new Atom(ownKeysPath, keys, null)
+        pathCache.set(ownKeysPath, atom)
+        relateAtomAndReaction(atom, reaction)
+      }
+      return keys
+    },
     get(target, prop, receiver) {
       // internal assessor
       switch (prop) {
@@ -107,7 +118,6 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
       if (isPrimitive(value)) {
         const primitiveAtom = new Atom(path, value, null)
         primitiveAtom.type = 'primitive'
-        primitiveAtom.addReaction(reaction)
         pathCache.set(path, primitiveAtom)
         relateAtomAndReaction(primitiveAtom, reaction)
         return value
@@ -117,6 +127,7 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
       const proxy = new Proxy(value, createHandler(path, pathCache))
       const newAtom = new Atom(path, value, proxy)
       newAtom.type = 'object'
+      pathCache.set(path, newAtom)
       relateAtomAndReaction(newAtom, reaction)
       return proxy
     },
@@ -127,6 +138,15 @@ export function createHandler(parentPath: string, pathCache: Map<string, Atom>, 
       const oldValue = Reflect.get(target, prop, receiver)
       const oldAtom = pathCache.get(path)
 
+      // add a new prop
+      if (Object.keys(target).indexOf(prop) < 0) {
+        const ownKeysAtom = pathCache.get(`${parentPath}.$$$ownKeys`)
+        if (ownKeysAtom) {
+          ownKeysAtom.reportChanged(null, null)
+        }
+      }
+
+      // intercept
       if (oldAtom) {
         const interceptRes = oldAtom.isIntercepted(oldValue, newValue)
         if (interceptRes) {
